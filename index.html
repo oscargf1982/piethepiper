@@ -271,6 +271,7 @@ function micFrame(dt){
 
 // ---------- Entrada ----------
 function onNote(name,t){
+  if(G.state==='choose'&&!paused){castNote(name,t);return true;}
   const p=G.perf;if(!p||t<p.listenFrom)return false;
   if(p.free){
     const n=p.notes[p.idx];if(!n)return false;
@@ -324,9 +325,37 @@ function startPerf(notes,opts){
 function chooseSpell(i){
   if(G.state!=='choose')return;const s=SPELLS[i];
   if(s.id==='coro'&&(G.coroUsed||G.ehp>E_MAX/2))return;
-  ac();G.spell=s;G.state='perform';G.turns++;updateHud();
-  say(`<b>${s.name}</b>: ${pills(s.notes)}<br>${$('free').checked?'Toca las notas en orden.':'Toca cuando cada nota cruce la línea dorada.'}`);
-  startPerf(s.notes,{kind:'spell'});
+  ac();G.spell=s;G.state='perform';G.turns++;G.cast=[];G.castPending=null;updateHud();
+  say(`<b>${s.name}</b>: ${pills(s.notes)}<br>Escucha cómo suena y luego tócala tú.`);
+  // primero suena la melodía de ejemplo, luego el jugador la toca
+  const st=gt+0.6;G.enemyNotes=s.notes.map((n,i)=>({n,t:st+BEAT+i*BEAT,played:false,demo:true}));G.ticks.push({t:st,hi:true});
+  const listenAt=st+BEAT*(s.notes.length+1);
+  startPerf(s.notes,{kind:'spell',listenAt,countIn:2});
+  if(G.perf.free){G.perf.listenFrom=listenAt;G.perf.deadline=listenAt+5+s.notes.length*2.5;}
+}
+// ---------- Lanzar un hechizo tocándolo directamente ----------
+function spellAvailable(s){return !(s.id==='coro'&&(G.coroUsed||G.ehp>E_MAX/2));}
+function castNote(name,t){
+  if(!G.cast)G.cast=[];
+  const last=G.cast[G.cast.length-1];if(last&&t-last.t>2.2)G.cast=[];
+  G.cast.push({n:name,t});if(G.cast.length>6)G.cast.shift();
+  G.castShow=gt;
+  const seq=G.cast.map(c=>c.n);
+  const ends=(m)=>seq.length>=m.length&&m.every((n,i)=>seq[seq.length-m.length+i]===n);
+  const longer=SPELLS.filter(sp=>spellAvailable(sp)&&sp.notes.length>3);
+  // ¿lo tocado hasta ahora es el comienzo de una melodía más larga? entonces espera un poco
+  const prefixOfLonger=longer.some(sp=>{for(let k=Math.min(seq.length,sp.notes.length-1);k>=2;k--){if(sp.notes.slice(0,k).every((n,i)=>seq[seq.length-k+i]===n))return true;}return false;});
+  const full=SPELLS.filter(sp=>spellAvailable(sp)&&ends(sp.notes)).sort((a,b)=>b.notes.length-a.notes.length)[0];
+  if(full&&full.notes.length>3){directCast(full);return;}
+  if(full){if(prefixOfLonger)G.castPending={spell:full,at:gt+BEAT*1.3};else directCast(full);}
+  else G.castPending=null;
+}
+function directCast(s){
+  const notes=G.cast.slice(-s.notes.length),t0=notes[0].t,free=$('free').checked;
+  G.cast=[];G.castPending=null;G.spell=s;G.state='perform';G.turns++;updateHud();
+  G.perf={free,listenFrom:0,deadline:0,notes:notes.map((c,i)=>{const dev=Math.abs((c.t-t0)-i*BEAT);return {n:c.n,t:c.t,j:free?'bien':(dev<=PERFECT?'perfecta':'bien'),jt:gt};})};
+  popup('¡'+s.name+'!','#e0b04a',HITX+150,395);
+  finishSpell();
 }
 function scorePerf(p){
   let sum=0;for(const n of p.notes){const v=n.j==='perfecta'?1.5:n.j==='bien'?1:0;sum+=v;
@@ -378,7 +407,8 @@ function toPlayer(){
   if(G.php<=0)return endGame(false);
   G.state='choose';updateHud();
   const coroNew=G.ehp<=E_MAX/2&&!G.coroUsed;
-  say(coroNew?'Elige un hechizo. <b>¡El Gran Coro ha despertado!</b>':'Elige un hechizo (teclas 1–4).');
+  G.cast=[];G.castPending=null;
+  say((coroNew?'<b>¡El Gran Coro ha despertado!</b><br>':'')+'Toca la melodía de un hechizo, o elige su tarjeta para oírla antes.');
 }
 function endGame(win){
   G.state='end';updateHud();const s=G.stats,tot=s.perf+s.good+s.miss;const acc=tot?Math.round((s.perf+s.good)/tot*100):0;
@@ -617,13 +647,14 @@ function drawStaff(t){
   }
   // notas del enemigo (fantasma verde)
   G.enemyNotes.forEach(e=>{const x=p&&p.free?HITX+30+e.i*90:HITX+(e.t-gt)*SPEED;if(p&&p.free)return;if(x<-30||x>990)return;drawHead(x,e.n,null,1,true);});
-  if(p&&p.free&&G.state==='echo'&&gt<p.listenFrom){ctx.fillStyle='#9fe08a';ctx.font='italic 20px Georgia';ctx.fillText('Escucha...',HITX+300,STAFF_BOT-90);}
+  if(p&&p.free&&gt<p.listenFrom){ctx.fillStyle='#9fe08a';ctx.font='italic 20px Georgia';ctx.fillText('Escucha...',HITX+300,STAFF_BOT-90);}
   // cuenta atrás
   if(p&&!p.free&&gt<p.notes[0].t){const beats=Math.ceil((p.notes[0].t-gt)/BEAT);
-    const listening=G.state==='echo'&&G.enemyNotes.some(e=>e.t+0.3>gt);
+    const listening=G.enemyNotes.some(e=>e.t+0.3>gt);
     ctx.fillStyle=listening?'#9fe08a':'#e0b04a';ctx.font='italic 22px Georgia';
-    ctx.fillText(listening?'Escucha al Dottore...':(beats<=2?'¡Ahora tú! '+beats:'Prepárate... '+beats),HITX+280,STAFF_BOT-90);}
-  if(!p&&G.state==='choose'){ctx.fillStyle='rgba(216,204,176,.6)';ctx.font='italic 20px Georgia';ctx.fillText('Elige un hechizo abajo (1–4)',HITX+240,STAFF_BOT-90);}
+    ctx.fillText(listening?(G.state==='echo'?'Escucha al Dottore...':'Escucha cómo suena...'):(beats<=2?'¡Ahora tú! '+beats:'Prepárate... '+beats),HITX+280,STAFF_BOT-90);}
+  if(!p&&G.state==='choose'){ctx.fillStyle='rgba(216,204,176,.6)';ctx.font='italic 20px Georgia';ctx.fillText(G.cast&&G.cast.length&&gt-G.castShow<2.2?'':'Toca una melodía o elige un hechizo (1–4)',HITX+200,STAFF_BOT-90);
+    if(G.cast&&gt-G.castShow<2.2)G.cast.forEach((c,i)=>drawHead(HITX+40+i*70,c.n,null,Math.max(.2,1-(gt-G.castShow)/2.2)));}
 }
 function drawPopups(){
   G.popups=G.popups.filter(p=>gt-p.t0<1.2);
@@ -667,6 +698,7 @@ $('calGo').onclick=closeCalib;
 $('calRedo').onclick=()=>openCalib(CAL.after);
 $('bRecal').onclick=()=>{if(!analyser)return;if(G.state!=='title'&&G.state!=='end'&&!paused)togglePause();$('pause').classList.add('hidden');openCalib(()=>{if(paused)togglePause();});};
 function update(dt){
+  if(G.state==='choose'&&G.castPending&&gt>=G.castPending.at)directCast(G.castPending.spell);
   // metrónomo
   G.ticks=G.ticks.filter(k=>{if(gt>=k.t){if(!k.soft||$('metro').checked)click(k.hi);return false;}return true;});
   // melodía del enemigo
