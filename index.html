@@ -110,7 +110,10 @@ select{font-family:inherit;font-size:15px;background:#2a221d;color:var(--bone);b
 .mpanel label{display:block;margin:10px 0}
 #bMute{position:fixed;top:10px;right:10px;z-index:60;width:42px;height:42px;border-radius:50%;border:1px solid #6b5a3a;background:rgba(10,8,6,.75);color:#e8dcc0;font-size:19px;cursor:pointer}
 body.ingame #bMute{display:none}
-@media (orientation:portrait){#title{justify-content:flex-start;overflow:auto}#mstage{aspect-ratio:auto;width:100vw}#menuBg{position:static;height:auto;aspect-ratio:16/9}#menuNav{position:static;width:auto;margin:14px 16px}.mi{font-size:22px;padding:10px 0}}
+#pressStart{position:absolute;left:7.5%;top:66%;width:31%;background:none;border:0;color:#e8dcc0;font-family:'IM Fell English',Georgia,serif;font-size:1.9cqw;text-shadow:0 2px 6px #000;cursor:pointer;animation:blink 2.2s ease-in-out infinite}
+#pressStart.hidden{display:none}#menuNav.hidden{display:none}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+@media (orientation:portrait){#pressStart{position:static;width:100%;margin:28px 0;font-size:22px}#title{justify-content:flex-start;overflow:auto}#mstage{aspect-ratio:auto;width:100vw}#menuBg{position:static;height:auto;aspect-ratio:16/9}#menuNav{position:static;width:auto;margin:14px 16px}.mi{font-size:22px;padding:10px 0}}
 </style>
 </head>
 <body>
@@ -150,7 +153,8 @@ body.ingame #bMute{display:none}
   <button id="bMute" title="Música" aria-label="Silenciar la música">🔊</button>
   <div class="overlay" id="title"><div id="mstage">
     <img id="menuBg" alt="El Flautista camina por un muelle de Venecia de noche, con una rata a sus pies">
-    <nav id="menuNav" aria-label="Menú principal">
+    <button id="pressStart" aria-label="Empezar">Pulsa cualquier tecla o toca la pantalla</button>
+    <nav id="menuNav" aria-label="Menú principal" class="hidden">
       <button class="mi" id="mCont">Continuar</button>
       <button class="mi" id="mNew">Nueva partida</button>
       <button class="mi" id="mOpt">Opciones</button>
@@ -902,9 +906,9 @@ function musicPlay(n){curM=n;}
 function wantVol(n){if(muted||n!==curM)return 0;
   if(n==='game'){const busy=['tut','exodo','combat'].includes(S.mode)||!!P||CAL.on;if(busy)return useMic?0:.12;return .4;}
   if(n==='cuna')return useMic&&(P||CAL.on)?0:.55;return .7;}
-setInterval(()=>{for(const n in TR){const a=TR[n],w=wantVol(n);if(w>0&&a.paused&&unlocked)a.play().catch(()=>{});
+setInterval(()=>{for(const n in TR){const a=TR[n],w=wantVol(n);if(w>0&&a.paused&&(unlocked||!a._tried)){a._tried=1;a.play().catch(()=>{});}
   const d=w-a.volume;a.volume=Math.max(0,Math.min(1,a.volume+Math.sign(d)*Math.min(Math.abs(d),.035)));if(w===0&&a.volume<.01&&!a.paused)a.pause();}},80);
-function unlock(){unlocked=true;}
+function unlock(e){if(!unlocked){unlocked=true;if(!$('pressStart').classList.contains('hidden')){$('pressStart').classList.add('hidden');$('menuNav').classList.remove('hidden');if(e){e.preventDefault&&e.type==='keydown'&&e.preventDefault();e.stopImmediatePropagation();}}}}
 addEventListener('pointerdown',unlock,{capture:true});addEventListener('keydown',unlock,{capture:true});
 function muteUI(){$('bMute').textContent=muted?'🔇':'🔊';$('bMute').setAttribute('aria-label',muted?'Activar la música':'Silenciar la música');$('oMusic').checked=!muted;$('gMusic').checked=!muted;}
 function setMuted(v){muted=v;try{localStorage.setItem('ptp_mute',v?'1':'0');}catch(e){}muteUI();}
