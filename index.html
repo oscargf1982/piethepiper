@@ -707,7 +707,7 @@ function drawCombat(t,dt){
     gspr('guardia-frente',ex+70+eh,CB_FLOOR,{s:.52,alpha:alpha*.85,flash:C.ehurt});
     gspr(atk?'guardia-ataque':'guardia-frente',ex+eh,CB_FLOOR,{s:atk?.6:.58,alpha,flash:C.ehurt});
   }else{
-    cspr(atk?'dottore-ataque':'dottore-lado',ex+eh,CB_FLOOR,{flip:!atk,alpha,flash:C.ehurt});
+    if(!(a&&a.type==='enemy'&&at<.95&&dotAnim(DOT_META[a.id]?a.id:'baston',ex+eh,CB_FLOOR,{t0:a.t0,flip:true,alpha,flash:C.ehurt})))cspr(atk?'dottore-ataque':'dottore-lado',ex+eh,CB_FLOOR,{flip:!atk,alpha,flash:C.ehurt});
     if(!atk&&alpha>0){const fl=.7+.3*Math.sin(t*13)*Math.sin(t*7);const lx=ex-24,ly=CB_FLOOR-75;const rg=ctx.createRadialGradient(lx,ly,2,lx,ly,46);rg.addColorStop(0,`rgba(255,180,80,${.35*fl*alpha})`);rg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=rg;ctx.fillRect(lx-46,ly-46,92,92);
       for(let i=0;i<4;i++){const px=ex+10+i*9,py=CB_FLOOR-60+Math.sin(t*2.4+i)*5;const gg=ctx.createRadialGradient(px,py,0,px,py,26);gg.addColorStop(0,'rgba(140,190,100,.3)');gg.addColorStop(1,'rgba(140,190,100,0)');ctx.fillStyle=gg;ctx.fillRect(px-26,py-26,52,52);}}
   }
@@ -958,14 +958,15 @@ async function scene6(){
     L('Alvise Morosin','Mirad sus ojos. Mirad sus ratas. Es el ladrón de niños de Hamelin, y ahora quiere a los nuestros.'),
     L('El Flautista','Teníamos un trato.'),
     L('Alvise Morosin','Venecia no hace tratos con demonios. ¡Prendedlo!')]);
-  await fade(1,.8);S.mode='combat';S.cb={foe:'guardias',php:50,pmax:50,ehp:28,emax:28,phurt:0,ehurt:0,name:''};await fade(0,.8);
+  await fade(1,.8);musicPlay('guardianes');S.mode='combat';S.cb={foe:'guardias',php:50,pmax:50,ehp:28,emax:28,phurt:0,ehurt:0,name:''};await fade(0,.8);
   await dialog([N('Las ratas te obedecen con una sola melodía: <b>Enjambre</b>, SI-LA-SOL. Tócala cuando sea tu turno.'),N('Cuando ataquen los guardias, escucha su melodía y repítela para esquivar.')]);
   while(!(await combatGuards())){stats.tries++;say('');await dialog([N('Los guardias te derriban... pero la multitud se aparta y te levantas otra vez.')]);}
   say('');
+  musicPlay('dottore');
   await dialog([N('Entre la multitud se abre paso un médico de la peste. Farol, bastón, incensario.'),L('Il Dottore del Ponte','Basta de trucos, forastero.')]);
   await combatDottore();
   say('');$('hudL').classList.add('hidden');$('hudR').classList.add('hidden');$('spells').classList.add('hidden');
-  await fade(1,.4);still('flauta',{z0:1.12,z1:1.0,dur:3});S.fade=0;crack();
+  await fade(1,.4);musicPlay(null);still('flauta',{z0:1.12,z1:1.0,dur:3});S.fade=0;crack();
   await dialog([N('Il Dottore te arranca la flauta y la parte sobre la rodilla.'),L('Il Dottore del Ponte','Sin música no eres nada.'),N('Los trozos se reparten entre los magistrados de la Sanidad, como trofeos contra el brujo de las ratas.')]);
   await fade(1,1);
 }
