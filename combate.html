@@ -394,7 +394,7 @@ function enemyTurn(){
   if(G.perf.free){G.perf.listenFrom=listenAt;G.perf.deadline=listenAt+9;}
 }
 function finishEcho(){
-  const p=G.perf;G.perf=null;const hits=p.notes.filter(n=>n.j).length;const a=G.attack;
+  const p=G.perf;G.perf=null;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;const a=G.attack;
   p.notes.forEach(n=>{if(n.j==='perfecta')G.stats.perf++;else if(n.j==='bien')G.stats.good++;else G.stats.miss++;});
   let dmg=Math.round(a.dmg*(1-hits/p.notes.length));let txt='';
   if(hits===p.notes.length){txt='¡Esquiva total! ';G.stats.dodges++;}else if(hits)txt=`Esquivas a medias (${hits}/${p.notes.length}). `;

@@ -667,7 +667,7 @@ function playerTurn(){
 }
 async function enemyEcho(atk){
   const C=S.cb;C.state='echo';C.echo=true;say(`${C.name} prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
-  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j).length;scorePerf(p);
+  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;scorePerf(p);
   const dmg=Math.round(atk.dmg*(1-hits/p.notes.length));
   say(hits===p.notes.length?'¡Esquiva total!':hits?`Esquivas a medias (${hits}/${p.notes.length}). ${atk.name}: ${dmg} de daño.`:`${atk.name}: ${dmg} de daño.`);
   await animWait({type:'enemy',dur:1.5,dmg,id:atk.id});
@@ -993,7 +993,7 @@ async function resolveSpell(s,p){
 }
 async function echo1(atk){
   const C=S.cb;C.state='echo';C.echo=true;say(`Il Dottore prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
-  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j).length;scorePerf(p);
+  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;scorePerf(p);
   let dmg=Math.round(atk.dmg*(1-hits/p.notes.length)),txt=hits===p.notes.length?'¡Esquiva total! ':hits?`Esquivas a medias (${hits}/${p.notes.length}). `:'';
   if(dmg>0&&C.shield){const ab=Math.min(C.shield,dmg);dmg-=ab;txt+=`La muralla para ${ab}. `;C.shield=0;C.wallFall=gt;}
   if(dmg>0){txt+=`${atk.name}: ${dmg} de daño.`;if(atk.fire){C.burn=true;txt+=' Algunas ratas arden.';}}else if(!txt)txt='Sin daño.';
@@ -1154,7 +1154,7 @@ async function c1s4(){ // La calle de los muertos
     {m:['SI','SOL','LA'],t:[L('La voz de una mujer, a través de las ratas','Se llevaron a mi hijo a la casa del puente. Dijeron que allí lo curarían.'),L('La voz','Por la noche olía a humo. A pelo quemado.')]}];
   S.mode='stillstaff';
   for(const v of VOICES){let ok=false;
-    while(!ok){say('Las ratas chillan: '+pills(v.m));wantNotes(v.m);const p=await perform(v.m);wantNotes([]);ok=p.notes.filter(n=>n.j).length>=2;scorePerf(p);
+    while(!ok){say('Las ratas chillan: '+pills(v.m));wantNotes(v.m);const p=await perform(v.m);wantNotes([]);ok=p.notes.filter(n=>n.j&&n.j!=='fallo').length>=2;scorePerf(p);
       if(!ok){say('La voz se rompe en chillidos. Prueba otra vez.');await wait(1.2);}}
     say('');squeaks(4);await dialog(v.t);}
   S.mode='still';
@@ -1315,7 +1315,7 @@ async function effectG(id,pw,pre){
 }
 async function echoG(atk){
   const C=S.cb;C.state='echo';C.echo=true;say(`${C.short||C.name} prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
-  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j).length;scorePerf(p);
+  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;scorePerf(p);
   let dmg=Math.round(atk.dmg*(1-hits/p.notes.length)),txt=hits===p.notes.length?'¡Esquiva total! ':hits?`Esquivas a medias (${hits}/${p.notes.length}). `:'';
   if(dmg>0&&C.shield){const ab=Math.min(C.shield,dmg);dmg-=ab;txt+=`La muralla para ${ab}. `;C.shield=0;C.wallFall=gt;}
   if(dmg>0){txt+=`${atk.name}: ${dmg} de daño.`;if(atk.fire){C.burn=true;txt+=' Algunas ratas arden.';}if(atk.confuse){C.conf=true;txt+=' Las ratas, confundidas, se muerden entre ellas.';}}else if(!txt)txt='Sin daño.';
