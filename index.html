@@ -447,7 +447,7 @@ function drawCover(im,{z=1,cx=.5,cy=.5,oy=0,alpha=1,filter=''}={}){
   if(!ready(im))return;const iw=im.naturalWidth,ih=im.naturalHeight;const s=Math.max(960/iw,540/ih)*z;const w=iw*s,h=ih*s;
   const x=(960-w)*cx,y=(540-h)*cy+oy;ctx.save();ctx.globalAlpha=alpha;if(filter)ctx.filter=filter;ctx.drawImage(im,x,y,w,h);ctx.restore();}
 function kbParams(){const k=S.kb;if(!k)return {};const q=Math.min(1,(gt-k.t0)/k.dur),e=q*q*(3-2*q);
-  return {z:k.z0+(k.z1-k.z0)*e,cx:k.x0+(k.x1-k.x0)*e,cy:k.y0+(k.y1-k.y0)*e};}
+  return {z:k.z0+(k.z1-k.z0)*e,cx:k.x0+(k.x1-k.x0)*e,cy:k.y0+(k.y1-k.y0)*e,oy:k.oy||0};}
 function still(img,kb={}){S.mode='still';S.img=img;S.kb={z0:1.02,z1:1.12,x0:.5,x1:.5,y0:.5,y1:.5,dur:14,...kb,t0:gt};}
 const fogP=[...Array(22)].map(()=>({x:Math.random()*960,y:180+Math.random()*320,r:40+Math.random()*90,v:4+Math.random()*10}));
 function drawFog(dt,a=1,y0=0){fogP.forEach(f=>{f.x+=f.v*dt;if(f.x-f.r>960)f.x=-f.r;const rg=ctx.createRadialGradient(f.x,f.y+y0,0,f.x,f.y+y0,f.r);
@@ -1124,7 +1124,7 @@ async function c1s3(){ // Casa de Bettina
   await fade(1,1);S.fx=null;musicPlay('game');
 }
 async function c1s4(){ // La calle de los muertos
-  still(has('c1_calle')?'c1_calle':'castello',{z0:1.08,z1:1.18,x0:.3,x1:.55,dur:40});S.fx=(t,dt)=>drawFog(dt,.8);await fade(0,1.2);
+  if(has('c1_calle'))still('c1_calle',{z0:1.0,z1:1.06,x0:.5,x1:.5,y0:1,y1:1,oy:-95,dur:60});else still('castello',{z0:1.08,z1:1.18,x0:.3,x1:.55,dur:40});S.fx=(t,dt)=>drawFog(dt,.8);await fade(0,1.2);
   await dialog([N('De camino al Rio della Misericordia, un cuerpo tapado con una sábana. Las ratas lo rodean en círculo, en silencio.'),
     N('Pulce se sienta con ellas. Levantan el hocico y chillan, todas a la vez, siempre la misma frase.'),
     N('Las ratas repiten lo último que oyeron. Si tocas lo mismo que ellas, podrás escucharlo.')]);
