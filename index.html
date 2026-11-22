@@ -349,7 +349,7 @@ function detectPitch(){
   if(best<0)return {rms,f:0};
   const a=cm[best-1],b=cm[best],c=cm[best+1],den=a-2*b+c;const shift=den?(a-c)/(2*den):0;return {rms,f:sr/(best+shift)};
 }
-function freqToNote(f){if(!f)return null;const m=69+12*Math.log2(f/440),r=Math.round(m);if(Math.abs(m-r)>0.45)return null;const pc=((r%12)+12)%12;for(const k of NOTE_ORDER)if(NOTES[k].pc===pc)return k;return null;}
+function freqToNote(f){if(!f)return null;const m=69+12*Math.log2(f/440),r=Math.round(m);if(Math.abs(m-r)>0.45)return null;const pc=((r%12)+12)%12;let best=null,bd=1e9;for(const k of NOTE_ORDER)if(NOTES[k].pc===pc){const d=NOTES[k].midi!=null?Math.abs(NOTES[k].midi-r):0;if(d<bd){bd=d;best=k;}}return best;}
 function centsOf(f){if(!f)return 0;const m=69+12*Math.log2(f/440);return (m-Math.round(m))*100;}
 function sensThr(){return micThr*Math.pow(2,(20-$('sens').value)/8);}
 function showTuner(el,needle,name,f){el.textContent=name?NOTES[name].label:'–';el.style.color=name?NOTES[name].color:'';needle.style.left=(50+Math.max(-50,Math.min(50,name?centsOf(f):0)))+'%';needle.style.opacity=name?1:.3;}
@@ -1228,6 +1228,164 @@ async function c1s8(){ // El camino de vuelta
     N('En algún lugar, alguien guarda el segundo trozo de tu flauta.')]);
   await fade(1,1.5);musicPlay('game');
 }
+
+// =================== INFRAESTRUCTURA COMÚN (notas nuevas y combate genérico) ===================
+// Notas nuevas: RE' agudo (cap. 2), MI grave (cap. 3) y RE grave (cap. 4). RE y RE' se distinguen por la octava (campo midi).
+Object.assign(NOTES,{
+  RE2:{label:"RE'",pc:2,midi:86,f:1174.66,step:6,color:'#2f9c95',key:'g',finger:'solo el dedo 2 de la mano izquierda, sin tapar el agujero del pulgar'},
+  MI:{label:'MI',pc:4,f:659.25,step:0,color:'#b8962a',key:'w',finger:'el pulgar, los tres dedos de la mano izquierda y el índice y el corazón de la derecha'},
+  RE:{label:'RE',pc:2,midi:74,f:587.33,step:-1,color:'#a0522d',key:'q',finger:'el pulgar, los tres dedos de la izquierda y tres de la derecha (todos menos el meñique)'}});
+(()=>{const st=document.createElement('style');st.textContent='#spells1{flex-wrap:wrap}#spells1 .card{flex:1 1 30%;min-width:0}';document.head.appendChild(st);})();
+function mkPad(k,atStart){if($('pad_'+k))return;const n=NOTES[k],b=document.createElement('button');b.className='note hidden';b.id='pad_'+k;b.style.background=n.color;
+  b.innerHTML=`${n.label}<small>tecla ${n.key.toUpperCase()}</small>`;b.addEventListener('pointerdown',e=>{e.preventDefault();pressKey(k);});if(atStart)$('pad').prepend(b);else $('pad').appendChild(b);}
+mkPad('RE2',true);mkPad('MI',false);mkPad('RE',false);
+function layoutPad(){const n=[...$('pad').children].filter(b=>!b.classList.contains('hidden')).length;$('pad').style.gridTemplateColumns=`repeat(${n<=4?n:Math.ceil(n/2)},1fr)`;}
+function unlockNote(k){if(k==='DO')unlockDO();else{if(!NOTE_ORDER.includes(k))NOTE_ORDER.push(k);$('pad_'+k).classList.remove('hidden');}layoutPad();}
+function ensureNotes(list){list.forEach(unlockNote);}
+// Atajos 1-6 para las tarjetas del combate genérico
+document.addEventListener('keydown',e=>{const k=e.key;if(paused||D||!S.cb||!S.cb.generic||S.cb.state!=='choose')return;if('123456'.includes(k)&&k.length===1){const b=$('spells1').children[+k-1];if(b&&!b.disabled)b.click();}});
+
+// Sprites con transparencia (webp) en script#spr_*
+const SPR={};document.querySelectorAll('script[id^="spr_"]').forEach(s=>{const im=new Image();im.src='data:image/webp;base64,'+s.textContent.trim();SPR[s.id.slice(4)]=im;});
+function sprite(k,x,y,{s=1,flip=false,alpha=1,flash=0,filter='',sy=1}={}){const im=SPR[k];if(!ready(im))return;const w=im.naturalWidth,h=im.naturalHeight;ctx.save();ctx.translate(x,y);ctx.scale((flip?-1:1)*s,s*sy);ctx.globalAlpha=alpha;
+  if(flash>0)ctx.filter=`brightness(${1+flash*1.6}) sepia(${flash*.6})`;else if(filter)ctx.filter=filter;ctx.drawImage(im,-w/2,-h,w,h);ctx.restore();}
+
+// ----- Hechizos -----
+const SPELLS={
+  enjambre:{name:'Enjambre',notes:['SI','LA','SOL'],desc:'Las ratas muerden.'},
+  muralla:{name:'Muralla',notes:['SOL','SOL','DO'],desc:'Escudo de 12.'},
+  ojos:{name:'Ojos en la niebla',notes:['LA','SI','DO'],desc:'El próximo ataque hace el doble.'},
+  eco:{name:'Eco',notes:['SI','DO','RE2'],desc:'Repiten tu último hechizo.'},
+  marea:{name:'Marea',notes:['MI','SOL','LA'],desc:'Atacan desde el agua y quitan la confusión.'},
+  roedoras:{name:'Roedoras',notes:['RE','MI','SOL'],desc:'Roen cuerdas y cadenas.'}};
+function curSpells(){const C=S.cb;return C.phase===1?C.cfg.sp1:C.cfg.sp2;}
+function buildCardsG(){const box=$('spells1');box.innerHTML='';curSpells().forEach((id,i)=>{const s=SPELLS[id],b=document.createElement('button');b.className='card';
+  b.innerHTML=`<b>${i+1}. ${s.name}</b> ${pills(s.notes)} <span class="d">${s.desc}</span>`;b.disabled=true;b.onclick=()=>S.cb.pick&&S.cb.pick(id);box.appendChild(b);});}
+function hudG(){hud();const C=S.cb,tg=[];if(C.shield)tg.push('Muralla '+C.shield);if(C.burn)tg.push('Ratas quemadas');if(C.conf)tg.push('Confusión');if(C.weak)tg.push('Punto débil');$('php').textContent=C.php+'/'+C.pmax+(tg.length?' · '+tg.join(' · '):'');}
+function playerTurnG(){
+  const C=S.cb;C.state='choose';const avail=curSpells();cardsOn(true);wantNotes([]);
+  staffHint='Toca la melodía de un hechizo o pulsa su tarjeta';
+  say('Tu turno. Toca la melodía de un hechizo.'+(C.conf?'<br><span style="color:#b9d89a">Ratas confundidas: tócalo perfecto o usa Marea.</span>':''));
+  return new Promise(res=>{let seq=[];
+    const fin=(id,p)=>{noteHandler=null;C.pick=null;cardsOn(false);staffHint='';C.state='anim';res({s:id,p});};
+    noteHandler=(name,t)=>{const l=seq[seq.length-1];if(l&&t-l.t>2.4)seq=[];seq.push({n:name,t});if(seq.length>5)seq.shift();
+      for(const id of avail){const m=SPELLS[id].notes;if(seq.length<m.length)continue;const tail=seq.slice(-m.length);
+        if(tail.every((c,i)=>c.n===m[i])){popup('¡'+SPELLS[id].name+'!','#e0b04a',HITX+150,395);fin(id,directPerf(tail));return;}}};
+    C.pick=async id=>{if(C.state!=='choose')return;noteHandler=null;cardsOn(false);C.state='perform';staffHint='';const s=SPELLS[id];
+      say(`<b>${s.name}</b>: ${pills(s.notes)}<br>Escucha cómo suena y luego tócala tú.`);wantNotes(s.notes);const p=await perform(s.notes);wantNotes([]);fin(id,p);};
+  });
+}
+async function resolveG(id,p){
+  const C=S.cb;let pw=scorePerf(p),pre='';
+  if(C.conf&&id!=='marea'){if(pw>=1.45){pre='Tu melodía suena más clara que su canto. ';}else{pw*=.5;pre='Las ratas siguen confundidas: media fuerza. ';}C.conf=false;}
+  if(pw<=0){say(pre+'Las ratas no entienden la melodía...');await animWait({type:'fizzle',dur:1.2});hudG();return;}
+  squeaks();
+  if(id==='eco'){if(!C.last){say('El eco no tiene nada que repetir.');await animWait({type:'fizzle',dur:1});return;}
+    say(pre+'Las ratas repiten tu última orden: '+SPELLS[C.last.id].name+'.');await wait(1);return effectG(C.last.id,Math.min(pw,C.last.pw),'');}
+  C.last={id,pw};return effectG(id,pw,pre);
+}
+async function effectG(id,pw,pre){
+  const C=S.cb,cfg=C.cfg;const dmgSpell=(base,kind,extra='')=>{let dmg=Math.round(base*pw),crit=false;if(C.weak){dmg*=2;C.weak=false;crit=true;}
+      return [dmg,crit,`Potencia ${Math.round(pw*100)} %. `+(crit?'¡Al punto débil! ':'')+extra];};
+  if(id==='enjambre'){const mult=cfg.enjMult?cfg.enjMult(C):1;if(C.burn){pw*=.75;C.burn=false;}
+    const [dmg,crit,txt]=dmgSpell((stats.c1&&stats.c1.freed?16:14)*mult,'');say(pre+txt+(cfg.enjText?cfg.enjText(C):'Las ratas muerden')+`: ${dmg} de daño.`);await animWait({type:'attack',dur:1.8,dmg,crit});}
+  else if(id==='muralla'){C.shield=Math.max(C.shield,Math.round(12*pw));say(pre+`Las ratas trepan unas sobre otras: muralla de ${C.shield}.`);await animWait({type:'wall',dur:1.4});}
+  else if(id==='ojos'){if(pw>=.5){C.weak=true;say(pre+(cfg.weakText||'Las exploradoras encuentran su punto débil.'));}else say(pre+'Las exploradoras se pierden en la oscuridad.');await animWait({type:'scout',dur:2.2});}
+  else if(id==='marea'){const [dmg,crit,txt]=dmgSpell(12*(cfg.mareaMult||1));C.conf=false;say(pre+txt+`Las nadadoras saltan del agua: ${dmg} de daño. Se acabó la confusión.`);await animWait({type:'attack',kind:'swim',dur:1.8,dmg,crit});}
+  else if(id==='roedoras'){const big=cfg.chains&&C.phase===2;const [dmg,crit,txt]=dmgSpell(big?20:9);say(pre+txt+(big?`Las roedoras muerden la cadena y desenredan colas: ${dmg}.`:`Las roedoras roen lo que pueden: ${dmg} de daño.`));await animWait({type:'attack',kind:'gnaw',dur:2,dmg,crit});}
+  hudG();
+}
+async function echoG(atk){
+  const C=S.cb;C.state='echo';C.echo=true;say(`${C.short||C.name} prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
+  const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j).length;scorePerf(p);
+  let dmg=Math.round(atk.dmg*(1-hits/p.notes.length)),txt=hits===p.notes.length?'¡Esquiva total! ':hits?`Esquivas a medias (${hits}/${p.notes.length}). `:'';
+  if(dmg>0&&C.shield){const ab=Math.min(C.shield,dmg);dmg-=ab;txt+=`La muralla para ${ab}. `;C.shield=0;C.wallFall=gt;}
+  if(dmg>0){txt+=`${atk.name}: ${dmg} de daño.`;if(atk.fire){C.burn=true;txt+=' Algunas ratas arden.';}if(atk.confuse){C.conf=true;txt+=' Las ratas, confundidas, se muerden entre ellas.';}}else if(!txt)txt='Sin daño.';
+  say(txt);await animWait({type:'enemy',dur:1.5,dmg,id:atk.id,fx:atk.fx});hudG();
+}
+// cfg: {name, short, hp, shiftAt, sp1, sp2, atk1, atk2, bg(t,dt), floor, ex, drawFoe(x,y,o), onShift(C), finale(C), enjMult, enjText, fall, intro}
+async function bossFight(cfg){
+  const C=S.cb={generic:true,cfg,name:cfg.name,short:cfg.short,php:50,pmax:50,ehp:cfg.hp,emax:cfg.hp,ehpShow:true,phurt:0,ehurt:0,anim:null,enter:gt,phase:1,shield:0,weak:false,burn:false,conf:false,last:null,state:'anim'};
+  S.mode='stillstaff';S.img=null;S.kb=null;S.fx=(t,dt)=>drawBoss(t,dt);
+  $('hudL').classList.remove('hidden');$('hudR').classList.remove('hidden');$('spells1').classList.remove('hidden');$('spells').classList.add('hidden');
+  buildCardsG();hudG();await fade(0,.8);await wait(.8);C.enter=null;
+  if(cfg.intro)await dialog(cfg.intro);
+  let k=0;
+  while(true){
+    if(C.phase===1&&C.ehp<=cfg.shiftAt){C.ehp=cfg.shiftAt;hudG();C.state='cut';say('');await cfg.onShift(C);C.phase=2;buildCardsG();hudG();k=0;}
+    if(C.ehp<=0)break;
+    const {s,p}=await playerTurnG();await resolveG(s,p);
+    if(C.ehp<=0&&C.phase===2)break;
+    if(C.phase===1&&C.ehp<=cfg.shiftAt)continue;
+    const pool=C.phase===1?cfg.atk1:cfg.atk2;await echoG(pool[k++%pool.length]);
+    if(C.php<=0){stats.tries++;say('');await dialog(cfg.fall||[N('Caes de rodillas. Pulce te muerde el dedo, fuerte.'),L('El Flautista','Todavía no. Todavía me deben algo.')]);
+      C.php=50;C.ehp=C.phase===1?cfg.hp:cfg.shiftAt;C.shield=0;C.weak=false;C.burn=false;C.conf=false;hudG();}
+  }
+  C.state='end';say('');if(cfg.finale)await cfg.finale(C);
+  C.kneel=gt;say(cfg.winText||'');squeaks(10);await wait(2.2);say('');
+  $('spells1').classList.add('hidden');$('hudL').classList.add('hidden');$('hudR').classList.add('hidden');
+}
+function drawBoss(t,dt){
+  const C=S.cb,cfg=C.cfg,FL=cfg.floor||335,F=()=>FL;cfg.bg(t,dt);
+  const a=C.anim,at=a?gt-a.t0:0;
+  const play=C.state==='perform'||(C.state==='echo'&&P&&gt>=P.listenFrom-0.3)||C.playing||(a&&(a.type==='attack'||a.type==='wall'||a.type==='scout')&&at<a.dur*.6);
+  const sh=C.phurt>0?Math.sin(gt*60)*C.phurt*6:0;shadowAt(270,FL,34);
+  cspr(play?'flautista-tocando':'flautista-lado',270+sh-C.phurt*10,FL+(play?Math.sin(t*5)*1.2:0),{flash:C.phurt});
+  if(C.phurt>0)C.phurt=Math.max(0,C.phurt-dt);
+  let ex=cfg.ex||700,alpha=1;const eh=C.ehurt>0?Math.sin(gt*70)*C.ehurt*8+C.ehurt*14:0;
+  if(C.enter!=null){const k=Math.min(1,(gt-C.enter)/1.4);ex=1000-(1000-ex)*k;alpha=Math.min(1,k*2);}
+  const atk=a&&a.type==='enemy'&&at>.1&&at<1.05;let lunge=0;if(atk&&cfg.lunge)lunge=Math.sin(Math.PI*Math.min(1,(at-.1)/.95))*cfg.lunge;
+  shadowAt(ex,FL,cfg.shadow||40);
+  cfg.drawFoe(ex+eh-lunge,FL,{atk,alpha,flash:C.ehurt,kneel:C.kneel!=null,t,C,id:a&&a.id});
+  if(C.ehurt>0)C.ehurt=Math.max(0,C.ehurt-dt);
+  // ratas
+  const R=[];
+  if(a&&a.type==='attack'){const N=a.crit?26:18,x0=290,tx=ex-40,Dd=a.dur,goT=Dd*.42,backT=Dd*.74;
+    for(let i=0;i<N;i++){const lane=(i%5)*2,s=.8+(i%3)*.08,l=Math.max(0,at-i*(goT*.45/N));let x,y,n,f=false;
+      if(at<backT){const q=Math.min(1,l/(goT*.55));x=x0+q*(tx-x0)+Math.sin(l*13+i)*9;y=FL+lane;n=l<=0?'ataque-agazapada':runF(l,i);
+        if(a.kind==='swim')y=FL+28-Math.abs(Math.sin(q*Math.PI*2+i))*38;
+        if(q>=1){const h=Math.abs(Math.sin((l-goT*.55)*9+i))*32;x=tx-24+(i%5)*12;y=FL+lane-h;n=h>20?'ataque-salto':h>7?'ataque-mordisco':'ataque-agazapada';
+          if(a.kind==='gnaw'){x=tx-30+(i%6)*14;y=FL-20-(i%4)*28-Math.sin(l*6+i)*4;n=i%2?'defensa-agarrada':'defensa-trepa';}}}
+      else{const q=Math.min(1,Math.max(0,(at-backT-i*.01)/(Dd-backT)));if(q>=1)continue;x=tx-24+(i%5)*12+(x0-60-tx)*q;y=FL+lane;n=runF(at,i);f=true;}
+      R.push({n,x,y,s,f});}
+    if(a.kind==='swim'&&at<backT){ctx.save();ctx.strokeStyle='rgba(140,200,190,.55)';ctx.lineWidth=3;for(let w=0;w<4;w++){const wx=300+((at*260+w*120)%(ex-280));ctx.beginPath();ctx.arc(wx,FL+30,26,Math.PI*1.1,Math.PI*1.9);ctx.stroke();}ctx.restore();}
+  }else if(a&&a.type==='scout'){for(let i=0;i<4;i++){const ang=at*3+i*Math.PI/2,x=ex+Math.cos(ang)*80,y=FL+Math.sin(ang)*6;R.push({n:'exploradora-olfatea',x,y,s:.7,f:Math.sin(ang)>0});}}
+  else{const n0=C.burn?3:6,scared=(a&&a.type==='enemy'&&a.dmg>0&&at>a.dur*.45);
+    for(let i=0;i<n0;i++){const x=180+i*22,lane=(i%3)*3;let n=['reposo-sentada','reposo-alerta','exploradora-olfatea'][(Math.floor((t+i)/2.4)+i)%3];let y=FL+lane,f=i%3===2;
+      if(C.conf){n=runF(t,i);f=Math.sin(t*3+i)>0;y-=Math.abs(Math.sin(t*7+i))*4;}else if(scared){n='reposo-chillido';y-=Math.abs(Math.sin(t*14+i))*3;}R.push({n,x,y,s:.74,f});}}
+  const wallUp=C.shield>0||(a&&a.type==='wall'),fall=C.wallFall&&gt-C.wallFall<1;
+  if(wallUp||fall){const k=a&&a.type==='wall'?Math.min(1,at/1):1;for(let i=0;i<9;i++){const row=Math.floor(i/3),col=i%3;if(row>k*3)continue;let x=325+col*16,y=FL-row*22;let n=row?'defensa-agarrada':'defensa-trepa';
+    if(fall){const q=(gt-C.wallFall);x-=q*60*(col-1);y+=q*q*120;n='defensa-caida';}R.push({n,x,y,s:.7,f:false});}}
+  R.sort((p,q)=>p.y-q.y).forEach(r=>spr(r.n,r.x,r.y,r.s,r.f));
+  if(cfg.over)cfg.over(t,dt,ex,FL);
+  // efectos de los ataques enemigos
+  if(a&&a.type==='enemy'){const q=at/a.dur;
+    if(a.fx==='song'&&q<.7){ctx.save();for(let w=0;w<5;w++){const k=((q/.7)+w*.18)%1,x=ex-40+(280-(ex-40))*k;ctx.strokeStyle=`rgba(150,200,120,${.6*(1-k)})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,FL-150,30+k*40,Math.PI*.75,Math.PI*1.25);ctx.stroke();}ctx.restore();}
+    if(a.fx==='fire'&&q<.6){const k=q/.6;for(let i=0;i<5;i++){const x=ex-30+(260-ex)*Math.min(1,k+i*.05),y=FL-120+Math.sin(k*Math.PI)*-40+i*6;const rg=ctx.createRadialGradient(x,y,0,x,y,24);rg.addColorStop(0,'rgba(255,210,110,.8)');rg.addColorStop(1,'rgba(230,60,10,0)');ctx.fillStyle=rg;ctx.fillRect(x-24,y-24,48,48);}}
+    if(a.fx==='bones'&&q<.6){const k=q/.6;for(let i=0;i<6;i++){const x=ex-30+(270-ex)*k+i*10,y=FL-110+Math.sin(k*Math.PI+i)*30;ctx.save();ctx.translate(x,y);ctx.rotate(t*8+i);ctx.fillStyle='#d8ccb0';ctx.fillRect(-9,-2,18,4);ctx.restore();}}
+    if(a.fx==='horde'&&q<.75){const k=q/.75;for(let i=0;i<14;i++){const x=ex-40-(ex-260)*Math.min(1,k*1.2-i*.03),y=FL+(i%4)*3;if(x<ex-30)spr(runF(t,i),x,y,.8,true);}}
+    if(a.fx==='shriek'&&q<.6){ctx.save();for(let w=0;w<4;w++){const k=((q/.6)+w*.25)%1;ctx.strokeStyle=`rgba(255,80,60,${.55*(1-k)})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(ex-30,FL-140,20+k*380,Math.PI*.8,Math.PI*1.2);ctx.stroke();}ctx.restore();}
+    if(q>.45&&!a.done){a.done=true;if(a.dmg>0){C.php=Math.max(0,C.php-a.dmg);C.phurt=1;thud();popup('−'+a.dmg,'#ff6a55',270,190);}else popup('¡Esquivado!','#9fe08a',270,190);hudG();}}
+  if(a&&a.type==='attack'&&at/a.dur>.45&&!a.done){a.done=true;C.ehp=Math.max(0,C.ehp-a.dmg);C.ehurt=1;thud();popup((a.crit?'¡Crítico! ':'')+'−'+a.dmg,'#ff6a55',ex,200);hudG();}
+  if(a&&a.type==='fizzle'&&at<1){ctx.fillStyle='rgba(200,200,200,.6)';ctx.font='italic 18px Georgia';ctx.fillText('...',290,FL-40-at*20);}
+  if(C.frag!=null){const q=Math.min(1,(gt-C.frag)/1.1),x=ex-40+(300-(ex-40))*q,y=FL-60*(1-q)-Math.abs(Math.sin(q*9))*20*(1-q);
+    ctx.save();ctx.translate(x,y);ctx.rotate(q*9);ctx.shadowColor='#e0b04a';ctx.shadowBlur=18;ctx.fillStyle='#6b4423';ctx.fillRect(-14,-3,28,6);ctx.fillStyle='#e0b04a';ctx.fillRect(-4,-4,3,8);ctx.fillRect(6,-4,3,8);ctx.restore();}
+}
+// Recuerdo de Hamelin en sepia sobre cualquier imagen
+async function memoryScene(img,caption,lines,{z0=1.0,z1=1.12}={}){
+  musicPlay(null);still(img,{z0,z1,dur:18});
+  S.fx=()=>{ctx.save();ctx.globalCompositeOperation='color';ctx.fillStyle='#8a6a3a';ctx.fillRect(0,0,960,540);ctx.restore();
+    const g=ctx.createRadialGradient(480,270,150,480,270,560);g.addColorStop(0,'rgba(40,25,10,0)');g.addColorStop(1,'rgba(20,12,6,.95)');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);};
+  S.caption=caption;await fade(0,2);bell();await wait(1.5);S.caption=null;await dialog(lines);await fade(1,.8);S.fx=null;musicPlay('game');
+}
+// Página del Libro de las Deudas (tres líneas escritas a mano)
+function bookPage(rows){S.overlay=()=>{const im=IMG.libro;if(!ready(im))return;const k=Math.min(1,(gt-S.ovT)/1.2);ctx.save();ctx.globalAlpha=.9*k;ctx.fillStyle='#000';ctx.fillRect(0,0,960,540);ctx.globalAlpha=k;
+    const w=780,h=w*im.naturalHeight/im.naturalWidth,x=480-w/2,y=250-h/2;ctx.drawImage(im,x,y,w,h);const px=x+w*.62,py=y+h*.33;
+    ctx.translate(px,py);ctx.rotate(-.2);const gg=ctx.createRadialGradient(0,40,10,0,40,150);gg.addColorStop(0,'rgba(214,180,128,.92)');gg.addColorStop(1,'rgba(214,180,128,0)');ctx.fillStyle=gg;ctx.fillRect(-160,-90,320,280);
+    ctx.fillStyle='#2a160c';ctx.textAlign='center';ctx.font='italic 26px "IM Fell English", Georgia';rows.forEach((l,i)=>ctx.fillText(l,0,i*38));ctx.restore();};S.ovT=gt;}
+// Aprender una nota nueva en mitad de un combate
+async function learnNote(k,lines){unlockNote(k);if(lines)await dialog(lines);say('Toca el '+pill(k)+'.');
+  await waitNotes([k],'Toca '+NOTES[k].label+': '+NOTES[k].finger,{onWrong:n=>say(`Eso es un ${pill(n)}. Busca el ${pill(k)}: ${NOTES[k].finger}.`)});say('');tone(NOTES[k].f,1.2,.12);}
 
 const SCENES=[scene0,scene1,scene2,scene3,scene4,scene5,scene6,scene7,scene8,c1s0,c1s1,c1s2,c1s3,c1s4,c1s5,c1s6,c1s7,c1s8];
 async function story(from=0){
