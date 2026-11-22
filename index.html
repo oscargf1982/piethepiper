@@ -173,7 +173,7 @@ body.ingame #bMute{display:none}
   </div>
   <div class="mpanel hidden" id="pMode"><div class="box">
     <h2>¿Cómo vas a tocar?</h2>
-    <p class="small">Camina con ◀ ▶ o las flechas, mira las cosas con E y pasa los diálogos con Espacio o tocando el cuadro de texto. Las ratas obedecen a tres notas: <span class="pill" style="background:var(--si)">SI</span><span class="pill" style="background:var(--la)">LA</span><span class="pill" style="background:var(--sol)">SOL</span> (teclado: D S A).</p>
+    <p class="small">Camina con ◀ ▶ o las flechas, mira las cosas con E y pasa los diálogos con Espacio o tocando el cuadro de texto. Las ratas obedecen a tres notas: <span class="pill" style="background:var(--si)">SI</span><span class="pill" style="background:var(--la)">LA</span><span class="pill" style="background:var(--sol)">SOL</span> (teclado: L K J).</p>
     <button class="btn" id="bMic">🎵 Con la flauta (micrófono)</button>
     <button class="btn alt" id="bKey">Sin flauta (teclado o botones)</button>
     <label class="small"><input type="checkbox" id="freeT"> Modo sin ritmo (solo cuenta el orden de las notas)</label>
@@ -716,7 +716,7 @@ function drawCombat(t,dt){
     gspr('guardia-frente',ex+70+eh,CB_FLOOR,{s:.52,alpha:alpha*.85,flash:C.ehurt});
     gspr(atk?'guardia-ataque':'guardia-frente',ex+eh,CB_FLOOR,{s:atk?.6:.58,alpha,flash:C.ehurt});
   }else{
-    cspr(atk?'dottore-ataque':'dottore-lado',ex+eh,CB_FLOOR,{flip:!atk,alpha,flash:C.ehurt});
+    if(!(a&&a.type==='enemy'&&at<.95&&dotAnim(DOT_META[a.id]?a.id:'baston',ex+eh,CB_FLOOR,{t0:a.t0,flip:true,alpha,flash:C.ehurt})))cspr(atk?'dottore-ataque':'dottore-lado',ex+eh,CB_FLOOR,{flip:!atk,alpha,flash:C.ehurt});
     if(!atk&&alpha>0){const fl=.7+.3*Math.sin(t*13)*Math.sin(t*7);const lx=ex-24,ly=CB_FLOOR-75;const rg=ctx.createRadialGradient(lx,ly,2,lx,ly,46);rg.addColorStop(0,`rgba(255,180,80,${.35*fl*alpha})`);rg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=rg;ctx.fillRect(lx-46,ly-46,92,92);
       for(let i=0;i<4;i++){const px=ex+10+i*9,py=CB_FLOOR-60+Math.sin(t*2.4+i)*5;const gg=ctx.createRadialGradient(px,py,0,px,py,26);gg.addColorStop(0,'rgba(140,190,100,.3)');gg.addColorStop(1,'rgba(140,190,100,0)');ctx.fillStyle=gg;ctx.fillRect(px-26,py-26,52,52);}}
   }
@@ -847,7 +847,7 @@ document.addEventListener('keydown',e=>{
   if(D&&D.pick&&'12'.includes(k)){D.pick(+k-1);return;}
   if(k==='1'&&S.mode==='combat'){$('spCard').click();return;}
   if(S.mode==='combat1'&&'123'.includes(k)&&!D){const b=$('spells1').children[+k-1];if(b&&!b.disabled)b.click();return;}
-  for(const n of NOTE_ORDER)if(NOTES[n].key===k){pressKey(n);return;}
+  for(const n of NOTE_ORDER)if((NOTES[n].code&&NOTES[n].code===e.code)||NOTES[n].key===k){e.preventDefault();pressKey(n);return;}
 });
 document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='arrowleft')keys.left=false;if(k==='arrowright')keys.right=false;});
 [['bLeft','left'],['bRight','right']].forEach(([id,dir])=>{const b=$(id);
@@ -967,14 +967,15 @@ async function scene6(){
     L('Alvise Morosin','Mirad sus ojos. Mirad sus ratas. Es el ladrón de niños de Hamelin, y ahora quiere a los nuestros.'),
     L('El Flautista','Teníamos un trato.'),
     L('Alvise Morosin','Venecia no hace tratos con demonios. ¡Prendedlo!')]);
-  await fade(1,.8);S.mode='combat';S.cb={foe:'guardias',php:50,pmax:50,ehp:28,emax:28,phurt:0,ehurt:0,name:''};await fade(0,.8);
+  await fade(1,.8);musicPlay('guardianes');S.mode='combat';S.cb={foe:'guardias',php:50,pmax:50,ehp:28,emax:28,phurt:0,ehurt:0,name:''};await fade(0,.8);
   await dialog([N('Las ratas te obedecen con una sola melodía: <b>Enjambre</b>, SI-LA-SOL. Tócala cuando sea tu turno.'),N('Cuando ataquen los guardias, escucha su melodía y repítela para esquivar.')]);
   while(!(await combatGuards())){stats.tries++;say('');await dialog([N('Los guardias te derriban... pero la multitud se aparta y te levantas otra vez.')]);}
   say('');
+  musicPlay('dottore');
   await dialog([N('Entre la multitud se abre paso un médico de la peste. Farol, bastón, incensario.'),L('Il Dottore del Ponte','Basta de trucos, forastero.')]);
   await combatDottore();
   say('');$('hudL').classList.add('hidden');$('hudR').classList.add('hidden');$('spells').classList.add('hidden');
-  await fade(1,.4);still('flauta',{z0:1.12,z1:1.0,dur:3});S.fade=0;crack();
+  await fade(1,.4);musicPlay(null);still('flauta',{z0:1.12,z1:1.0,dur:3});S.fade=0;crack();
   await dialog([N('Il Dottore te arranca la flauta y la parte sobre la rodilla.'),L('Il Dottore del Ponte','Sin música no eres nada.'),N('Los trozos se reparten entre los magistrados de la Sanidad, como trofeos contra el brujo de las ratas.')]);
   await fade(1,1);
 }
@@ -1465,7 +1466,7 @@ async function c2s4(){ // La puerta del Ghetto: combate
         N('Las llaves caen al suelo con estrépito. Entre ellas rueda un trozo de madera oscura, tallada, con dos agujeros.',{sfx:()=>{C.frag=gt;}})]);
       await wait(1.2);C.frag=null;
       await learnNote('RE2',[N('El trozo encaja en tu flauta con un chasquido. Ahora tiene un agujero más.'),
-        N(`Nota nueva: ${pill('RE2')}, el RE agudo. Tápalo con ${NOTES.RE2.finger}. Tecla G.`)]);
+        N(`Nota nueva: ${pill('RE2')}, el RE agudo. Tápalo con ${NOTES.RE2.finger}. Tecla ${NOTES.RE2.key.toUpperCase()}.`)]);
       C.silence=gt;
       await dialog([N('Arriba, Matteo baja el pífano.'),L('Matteo','Esa nota… mi hija la cantaba.'),L('Bastian','¡Matteo! ¡Toca!'),
         N(`Ahora puedes usar <b>Eco</b> (${pills(SPELLS.eco.notes)}): las ratas repiten tu último hechizo.`)]);},
@@ -2672,6 +2673,10 @@ C8_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.cre
     const f=stats.c8.final;e.querySelector('h2').textContent='Fin · '+ENDS8[f];
     ps[0].textContent=f==='verdad'?'Venecia dijo la verdad, la deuda quedó pagada y el Flautista por fin descansa. Tano creció.':f==='romper'?'El Libro ardió y nadie cobró nada. La verdad se quedó sin decir, y Tano sigue esperando en su puente.':'El Flautista cobró su deuda con lo que más quería Venecia. La leyenda volvió a empezar.';
     $('endBook').textContent+=($('endBook').textContent?' · ':'Libro de las Deudas · ')+'Alvise Morosin: '+(f==='verdad'?'confesó ante el Senado.':f==='romper'?'escapó; el libro ardió.':'cobrado.');}).observe(e,{attributes:true,attributeFilter:['class']});}
+// Teclado (modo sin flauta), como un piano en la fila central: A S D F = DO RE MI FA · J K L Ñ = SOL LA SI DO'. RE' agudo en la tecla de al lado de la Ñ.
+// Se usa e.code para que funcione igual en teclados españoles y de otros idiomas (Ñ = ; en teclado inglés).
+const KEYMAP={DO1:['a','KeyA'],RE:['s','KeyS'],MI:['d','KeyD'],FA:['f','KeyF'],SOL:['j','KeyJ'],LA:['k','KeyK'],SI:['l','KeyL'],DO:['ñ','Semicolon'],RE2:['´','Quote']};
+for(const [n,[key,code]] of Object.entries(KEYMAP))if(NOTES[n]){NOTES[n].key=key;NOTES[n].code=code;const b=$('pad_'+n),sm=b&&b.querySelector('small');if(sm)sm.textContent='tecla '+key.toUpperCase();}
 const MI=[...document.querySelectorAll('.mi')];let msel=1;
 function selMenu(i){MI.forEach((b,k)=>b.classList.toggle('sel',k===i));msel=i;}
 MI.forEach((b,i)=>b.addEventListener('pointerenter',()=>selMenu(i)));
