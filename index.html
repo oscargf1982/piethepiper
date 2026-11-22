@@ -156,6 +156,7 @@ body.ingame #bMute{display:none}
   <audio id="mGame" src="audio/prologo.mp3" loop preload="auto"></audio>
   <audio id="mCuna" src="audio/cancion-de-cuna.mp3" loop preload="auto"></audio>
   <audio id="mMonaca" src="audio/salmo-monaca.mp3" loop preload="auto"></audio>
+  <audio id="mGuard" src="audio/guardianes.mp3" loop preload="auto"></audio>
   <button id="bMute" title="Música" aria-label="Silenciar la música">🔊</button>
   <div class="overlay" id="title"><div id="mstage">
     <img id="menuBg" alt="El Flautista camina por un muelle de Venecia de noche, con una rata a sus pies">
@@ -1426,7 +1427,7 @@ function drawGuardians(x,y,o){const C=o.C,id=o.id;
   if(C.silence&&gt-C.silence<3.5){ctx.save();ctx.fillStyle='#efe3c8';ctx.font='italic 16px Georgia';ctx.textAlign='center';ctx.globalAlpha=Math.min(1,(3.5-(gt-C.silence)));ctx.fillText('(Matteo deja de tocar)',mx,my-150);ctx.restore();}
 }
 async function c2s4(){ // La puerta del Ghetto: combate
-  ensureNotes(['DO']);musicPlay('game');S.fade=1;
+  ensureNotes(['DO']);musicPlay('guardianes');S.fade=1;
   await bossFight({name:'Los Guardianes de las Puertas',short:'Los Guardianes',hp:70,shiftAt:35,
     sp1:['enjambre','muralla','ojos'],sp2:['enjambre','muralla','ojos','eco'],
     atk1:[{id:'alabarda',name:'Golpe de alabarda',notes:['LA','SOL','LA'],dmg:8},{id:'redoble',name:'Redoble',notes:['SOL','SOL','SI'],dmg:9,fx:'song'}],
@@ -1953,14 +1954,14 @@ $('bAgain').onclick=()=>{location.reload();};
 $('spMel').innerHTML=pills(ENJ);$('spCard').disabled=true;setMoveUI(false);
 
 // ---------- Música (empieza con el primer toque: los navegadores bloquean el autoplay) ----------
-const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca')};let curM='menu',unlocked=false,muted=false;
+const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard')};let curM='menu',unlocked=false,muted=false;
 Object.values(TR).forEach(a=>a.volume=0);
 try{muted=localStorage.getItem('ptp_mute')==='1';}catch(e){}
 function musicPlay(n){curM=n;}
 function wantVol(n){if(muted||n!==curM)return 0;
   if(n==='game'){const busy=['tut','exodo','combat','combat1','stillstaff'].includes(S.mode)||!!P||CAL.on;if(busy)return useMic?0:.12;return .4;}
   if(n==='cuna')return useMic&&(P||CAL.on)?0:(P?.15:.55);
-  if(n==='monaca')return (P||CAL.on)?(useMic?0:.15):.45;return .7;}
+  if(n==='monaca'||n==='guardianes')return (P||CAL.on)?(useMic?0:.15):.45;return .7;}
 setInterval(()=>{for(const n in TR){const a=TR[n],w=wantVol(n);if(w>0&&a.paused&&(unlocked||!a._tried)){a._tried=1;a.play().catch(()=>{});}
   const d=w-a.volume;a.volume=Math.max(0,Math.min(1,a.volume+Math.sign(d)*Math.min(Math.abs(d),.035)));if(w===0&&a.volume<.01&&!a.paused)a.pause();}},80);
 function unlock(e){if(!unlocked){unlocked=true;if(!$('pressStart').classList.contains('hidden')){$('pressStart').classList.add('hidden');$('menuNav').classList.remove('hidden');if(e){e.preventDefault&&e.type==='keydown'&&e.preventDefault();e.stopImmediatePropagation();}}}}
