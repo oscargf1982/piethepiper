@@ -90,13 +90,35 @@ select{font-family:inherit;font-size:15px;background:#2a221d;color:var(--bone);b
   
   #dlg{font-size:clamp(12px,3cqw,20px)}#msg{width:60%}
 }
+#flute{display:none}
+@media (orientation:landscape){
+  #wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr) auto;gap:8px 12px}
+  #stage{grid-column:1;grid-row:1}
+  #controls{grid-column:1;grid-row:2;width:100%;display:grid;grid-template-columns:1fr 3fr 1fr;gap:6px 8px}
+  #row{display:contents}
+  #spells,#spells1{grid-column:1/-1;grid-row:1}
+  #bLeft{grid-column:1;grid-row:2}#bAct{grid-column:2;grid-row:2}#bRight{grid-column:3;grid-row:2}
+  #panel{grid-column:1/-1;grid-row:3}
+  .mv{min-height:40px}
+  #flute{display:flex;grid-column:2;grid-row:1/3;width:clamp(78px,8.5vw,150px);height:100%;min-height:0;align-items:stretch;justify-content:center}
+  #fluteBody{position:relative;width:100%;height:100%}
+  #fluteSvg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 4px 10px rgba(0,0,0,.8))}
+  #fluteHoles{position:absolute;inset:0}
+  #fluteHoles #pad{display:block;position:absolute;inset:0}
+  #fluteHoles .note{position:absolute;left:50%;transform:translate(-50%,-50%);width:min(66%,calc((100dvh - 30px) * .084));aspect-ratio:1;padding:0;border-radius:50%;
+    border:3px solid #2a1a0e;box-shadow:inset 0 3px 6px rgba(0,0,0,.55),0 0 0 2px #b08a3a;font-size:clamp(11px,1.15vw,18px);line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #fluteHoles .note.hidden{display:none}
+  #fluteHoles .note small{font-size:.62em;margin-top:1px}
+  #fluteHoles .note.on{transform:translate(-50%,-50%) scale(.9)}
+  #fluteHoles .note.want{box-shadow:inset 0 3px 6px rgba(0,0,0,.4),0 0 0 3px var(--gold),0 0 16px var(--gold)}
+}
 @media (orientation:landscape) and (max-height:560px){
-  #wrap{flex-direction:row;gap:8px;padding-top:max(6px,env(safe-area-inset-top));padding-bottom:max(6px,env(safe-area-inset-bottom))}
-  #controls{width:clamp(220px,30vw,330px);height:100%;overflow:auto;justify-content:space-between;gap:6px}
-  #row{grid-template-columns:1fr 1fr;flex:1 1 auto}#pad{grid-column:1/3;grid-row:1}
-  .note{padding:4px;font-size:20px;min-height:44px}.mv{min-height:44px}
-  #panel{font-size:12px;gap:2px 10px}#lvl{width:50px}#det{font-size:16px;min-width:2.4em}
-  .card .d{display:none}
+  #wrap{gap:4px 8px;padding-top:max(4px,env(safe-area-inset-top));padding-bottom:max(4px,env(safe-area-inset-bottom))}
+  .mv{min-height:34px;font-size:16px}.mv.act{font-size:14px}
+  #panel{font-size:11px;gap:2px 10px}#lvl{width:50px}#det{font-size:15px;min-width:2.4em}
+  .card{padding:3px 8px}.card b{font-size:14px}.card .d{display:none}
+  #fluteHoles .note small{display:none}
+}
 }
 #title{padding:0;background:#000;flex-direction:column}
 #mstage{position:relative;width:min(100vw,calc(100vh*16/9));aspect-ratio:16/9;container-type:inline-size;flex:none}
@@ -151,6 +173,8 @@ body.ingame #bMute{display:none}
       <button class="btn alt hidden" id="bRecal" style="width:auto;margin:0;padding:4px 10px;font-size:14px">Afinar micrófono</button>
     </div>
   </div>
+
+  <div id="flute" aria-label="Flauta"><div id="fluteBody"><svg id="fluteSvg" viewBox="0 0 100 1000" preserveAspectRatio="none"></svg><div id="fluteHoles"></div></div></div>
 
   <audio id="mMenu" src="audio/intro.mp3" loop preload="auto"></audio>
   <audio id="mGame" src="audio/prologo.mp3" loop preload="auto"></audio>
@@ -1053,7 +1077,7 @@ async function scene6(){
   await dialog([N('Entre la multitud se abre paso un médico de la peste. Farol, bastón, incensario.'),L('Il Dottore del Ponte','Basta de trucos, forastero.')]);
   await combatDottore();
   say('');$('hudL').classList.add('hidden');$('hudR').classList.add('hidden');$('spells').classList.add('hidden');
-  await fade(1,.4);musicPlay(null);still('flauta',{z0:1.12,z1:1.0,dur:9});S.fade=0;crack();await wait(3.5);
+  await fade(1,.4);musicPlay(null);still('flauta',{z0:1.12,z1:1.0,dur:9});S.fade=0;crack();window.fluteCracked=true;await wait(3.5);
   await dialog([N('Il Dottore te arranca la flauta y la parte sobre la rodilla.'),L('Il Dottore del Ponte','Sin música no eres nada.'),N('Los trozos se reparten entre los magistrados de la Sanidad, como trofeos contra el brujo de las ratas.')]);
   await wait(2);await fade(1,1.6);
 }
@@ -2033,7 +2057,7 @@ const C34_SCN=[[c3s0,'Cap. 3 · El pozo de San Zaccaria'],[c3s1,'Cap. 3 · La cr
 
 const SCENES=[scene0,scene1,scene2,scene3,scene4,scene5,scene6,scene7,scene8,c1s0,c1s1,c1s2,c1s3,c1s4,c1s5,c1s6,c1s7,c1s8,c2s0,c2s1,c2s2,c2s3,c2s4,c2s5,c2s6];
 async function story(from=0){
-  for(let i=from;i<SCENES.length;i++){putSave(i);musicPlay(i===0||i===7?null:'game');S.scene=i;S.caption=null;S.title=null;S.overlay=null;S.fx=null;await SCENES[i]();}
+  for(let i=from;i<SCENES.length;i++){putSave(i);if(i<7)window.fluteCracked=false;musicPlay(i===0||i===7?null:'game');S.scene=i;S.caption=null;S.title=null;S.overlay=null;S.fx=null;await SCENES[i]();}
   const tot=stats.perf+stats.good+stats.miss,acc=tot?Math.round((stats.perf+stats.good)/tot*100):0;
   $('endS').textContent=`Notas acertadas: ${acc} % · Perfectas: ${stats.perf}`+(stats.rats?` · Ratas en el éxodo: ${stats.rats.toLocaleString('es-ES')}`:'');
   {const bk=[];if(stats.c1&&stats.c1.book)bk.push('Il Dottore del Ponte: '+(stats.c1.book==='castigo'?'castigado.':'confesó la verdad.'));
@@ -2273,6 +2297,37 @@ C5_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.cre
 const c6st=()=>(stats.c6=stats.c6||{});
 Object.assign(NOTES,{DO1:{label:'DO',pc:0,midi:72,f:523.25,step:-2,color:'#5a6470',key:'z',finger:'todos los agujeros tapados: el pulgar, los tres dedos de la izquierda y los cuatro de la derecha, meñique incluido'}});
 mkPad('DO1',false);
+// ---- Flauta lateral (pantalla horizontal): las notas se colocan sobre la flauta; rota o completa según avance ----
+const FL_ORDER=['RE2','DO','SI','LA','SOL','FA','MI','RE','DO1'],FL_BASE=['SI','LA','SOL'],FL_Y=i=>175+i*88;
+window.fluteCracked=false;
+function flutePlace(){const land=matchMedia('(orientation:landscape)').matches,pad=$('pad');
+  if(land&&pad.parentNode!==$('fluteHoles'))$('fluteHoles').appendChild(pad);
+  else if(!land&&pad.parentNode!==$('row'))$('row').insertBefore(pad,$('bRight'));
+  FL_ORDER.forEach((k,i)=>{const b=$('pad_'+k);if(b)b.style.top=land?FL_Y(i)/10+'%':'';});}
+function fluteOpen(k){const b=$('pad_'+k);return !!(b&&!b.classList.contains('hidden'));}
+function fluteBroken(){return window.fluteCracked||!(S.scene>=1&&S.scene<=6);}
+let fluteSig='';
+function fluteDraw(){const br=fluteBroken(),open=FL_ORDER.map(fluteOpen),sig=br+'|'+open.join(',');if(sig===fluteSig)return;fluteSig=sig;
+  const W='url(#flW)';let g=`<defs><linearGradient id="flW" x1="0" x2="1"><stop offset="0" stop-color="#24150b"/><stop offset=".3" stop-color="#8a5a32"/><stop offset=".55" stop-color="#5a3820"/><stop offset="1" stop-color="#1c1009"/></linearGradient>
+    <linearGradient id="flB" x1="0" x2="1"><stop offset="0" stop-color="#5a4318"/><stop offset=".35" stop-color="#e0b860"/><stop offset="1" stop-color="#4a3510"/></linearGradient></defs>`;
+  // boquilla, cabeza y pie (siempre presentes: es lo que el Flautista conserva)
+  g+=`<path d="M38,18 Q50,6 62,18 L70,128 L30,128 Z" fill="${W}" stroke="#120a05" stroke-width="1.5"/><rect x="40" y="96" width="20" height="12" rx="2" fill="#0a0604"/>`;
+  g+=`<rect x="28" y="120" width="44" height="9" fill="url(#flB)"/>`;
+  g+=`<path d="M30,925 L70,925 L72,940 L78,988 Q50,996 22,988 L28,940 Z" fill="${W}" stroke="#120a05" stroke-width="1.5"/><rect x="28" y="922" width="44" height="9" fill="url(#flB)"/>`;
+  FL_ORDER.forEach((k,i)=>{const y0=FL_Y(i)-44,y1=FL_Y(i)+44,cy=FL_Y(i),base=FL_BASE.includes(k);
+    const missing=br&&!open[i]&&!base;
+    if(missing){g+=`<rect x="31" y="${y0+4}" width="38" height="${y1-y0-8}" fill="rgba(0,0,0,.35)" stroke="#6b4f3c" stroke-width="1.2" stroke-dasharray="5 5" opacity=".7"/>`;
+      // astillas en los bordes
+      g+=`<path d="M30,${y0} L36,${y0+12} L42,${y0+3} L50,${y0+15} L57,${y0+4} L64,${y0+11} L70,${y0} Z" fill="${W}" opacity=".9"/>`;
+      g+=`<path d="M30,${y1} L35,${y1-10} L44,${y1-2} L51,${y1-14} L59,${y1-3} L65,${y1-12} L70,${y1} Z" fill="${W}" opacity=".9"/>`;return;}
+    g+=`<rect x="30" y="${y0}" width="40" height="${y1-y0}" fill="${W}"/><line x1="30" y1="${y0}" x2="30" y2="${y1}" stroke="#120a05" stroke-width="1.5"/><line x1="70" y1="${y0}" x2="70" y2="${y1}" stroke="#120a05" stroke-width="1.5"/>`;
+    if(br&&!base){g+=`<rect x="28" y="${y0}" width="44" height="7" fill="url(#flB)"/><rect x="28" y="${y1-7}" width="44" height="7" fill="url(#flB)"/><path d="M36,${y0+12} L44,${cy-10} L39,${cy+8} L47,${y1-14}" stroke="#120a05" stroke-width="1.2" fill="none" opacity=".8"/>`;}
+    if(!open[i])g+=`<ellipse cx="50" cy="${cy}" rx="9" ry="7" fill="#0a0604" stroke="#3b2414" stroke-width="1.5"/>`;});
+  if(br&&FL_ORDER.slice(0,2).some((k,i)=>!open[i]))g+=`<path d="M31,128 L36,140 L44,131 L52,143 L60,132 L69,139 L70,128 Z" fill="${W}"/>`;
+  $('fluteSvg').innerHTML=g;}
+matchMedia('(orientation:landscape)').addEventListener('change',flutePlace);addEventListener('resize',flutePlace);
+flutePlace();fluteDraw();setInterval(fluteDraw,300);
+
 Object.assign(SPELLS,{
   compas:{name:'Compás',notes:['SOL','SOL','SOL','SOL'],desc:'Al ritmo de la muleta de Tano.'},
   coro:{name:'Gran Coro',notes:['DO1','MI','SOL','SI','DO'],desc:'Todas las ratas a la vez.'}});
