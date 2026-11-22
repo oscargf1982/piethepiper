@@ -61,10 +61,50 @@ select{font-family:inherit;font-size:15px;background:#2a221d;color:var(--bone);b
 .mv:disabled{opacity:.3}
 .mv.act{background:var(--blood);border-color:#c0392b;font-size:18px}
 .mv.on{filter:brightness(1.6)}
+/* Botones ilustrados (placas de madera y cuero con marco de latón) */
+.mv,.btn{border:1px solid transparent;border-radius:0;background:none;background-clip:padding-box;color:var(--bone);text-shadow:0 1px 2px #000,0 0 6px #000;
+  border-image:url(interfaz/boton-madera.webp) 50 54 fill / 12px 13px stretch;transition:filter .12s}
+.btn{border-image-source:url(interfaz/boton-rojo.webp)}
+.btn.alt{border-image-source:url(interfaz/boton-madera.webp);background:none}
+.btn:hover,.btn.alt:hover,.mv:hover:not(:disabled){background:none;filter:brightness(1.18)}
+.mv.act{background:none;border-image-source:url(interfaz/boton-rojo.webp)}
+.mv.act:active,.mv.act.on,.btn:not(.alt):active{border-image-source:url(interfaz/boton-rojo-pulsado.webp);filter:none}
+.mv:not(.act):active,.mv:not(.act).on,.btn.alt:active{filter:brightness(1.35) sepia(.2)}
+.mv:disabled,.btn:disabled{opacity:.75;border-image-source:url(interfaz/boton-madera-off.webp);color:#8d8270;filter:none}
+#bLeft,#bRight{border-image:none;border:0;background:url(interfaz/boton-izq.webp) center/contain no-repeat;font-size:0;color:transparent;min-height:52px}
+#bRight{background-image:url(interfaz/boton-der.webp)}
+#bLeft:active,#bLeft.on{background-image:url(interfaz/boton-izq-pulsado.webp);filter:none}#bRight:active,#bRight.on{background-image:url(interfaz/boton-der-pulsado.webp);filter:none}
+#bLeft:disabled,#bRight:disabled{border-image:none;opacity:.35;filter:grayscale(.6)}
+.btn .ico{height:1.7em;vertical-align:middle;margin:-.35em .2em -.3em 0}
+/* Tarjetas de hechizo: pergamino clavado en una tablilla; sellos de lacre para las notas */
+.card,#spells1 .card{background:url(interfaz/tarjeta-activa.webp) center/100% 100% no-repeat;border:0;border-radius:0;color:#2b1a0e;text-shadow:none;padding:12px 12px 12px 21%}
+.card:disabled{background-image:url(interfaz/tarjeta.webp);opacity:.6;filter:saturate(.7)}
+.card:hover:not(:disabled){filter:brightness(1.1)}
+.card b{color:#3a140c}.card .d{color:#4a3424}
+.pill{border-radius:0;padding:1px 9px;margin:1px 2px;background-position:center;background-size:100% 100%;background-repeat:no-repeat;text-shadow:0 1px 2px #000;font-weight:bold}
+.pill.pill-SI{background:url(interfaz/sello-si.webp) center/100% 100% no-repeat !important}
+.pill.pill-LA{background:url(interfaz/sello-la.webp) center/100% 100% no-repeat !important}
+.pill.pill-SOL{background:url(interfaz/sello-sol.webp) center/100% 100% no-repeat !important}
+.pill.pill-DO{background:url(interfaz/sello-do.webp) center/100% 100% no-repeat !important}
+/* Menú lateral: tabla de nogal con marco de latón, separador, deslizador, volumen y casillas */
+@media (orientation:landscape){
+  #controls{border:1px solid transparent;border-image:url(interfaz/panel.webp) 92 20 92 20 fill / 44px 10px stretch;padding:40px 12px 40px}
+}
+@media (orientation:landscape) and (max-height:560px){#controls{border-image-width:26px 7px;padding:22px 9px}#panel input[type=checkbox],#controls input[type=checkbox]{width:17px;height:17px}#src{display:none}#panel{gap:2px !important}#bLeft,#bRight{min-height:40px}}
+#panel{border-top:0 !important;background:url(interfaz/separador.webp) top center/100% auto no-repeat;padding-top:16px !important}
+#panel input[type=range],#sens{-webkit-appearance:none;appearance:none;background:url(interfaz/ranura.webp) center/100% 100% no-repeat;height:16px;border:0;margin:4px 0}
+#sens::-webkit-slider-runnable-track{background:transparent;height:16px}
+#sens::-moz-range-track{background:transparent;height:16px}
+#sens::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-4px;border:0;border-radius:50%;background:url(interfaz/tirador.webp) center/contain no-repeat;cursor:pointer}
+#sens::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:url(interfaz/tirador.webp) center/contain no-repeat;cursor:pointer}
+#lvl{background:url(interfaz/volumen.webp) center/100% 100% no-repeat;border:0;height:14px;padding:3px 8%}
+#lvl i{border-radius:3px;background:linear-gradient(#b6d39c,#5f8a46)}
+#panel input[type=checkbox],#controls input[type=checkbox]{-webkit-appearance:none;appearance:none;width:22px;height:22px;margin:0;flex:none;background:url(interfaz/casilla.webp) center/contain no-repeat;cursor:pointer}
+#panel input[type=checkbox]:checked,#controls input[type=checkbox]:checked{background-image:url(interfaz/casilla-on.webp)}
 #spells{display:flex;gap:8px}
-.card{flex:1;background:linear-gradient(#231b17,#15100d);border:1px solid #5b4434;border-radius:5px;padding:6px 10px;color:var(--bone);text-align:left}
-.card:hover:not(:disabled){border-color:var(--gold)}.card:disabled{opacity:.38;cursor:not-allowed}
-.card b{font-size:17px;margin-right:6px}.card .d{font-size:13px;color:var(--bone2)}
+.card{flex:1;text-align:left}
+.card:disabled{cursor:not-allowed}
+.card b{font-size:17px;margin-right:6px}.card .d{font-size:13px}
 .pill{display:inline-block;padding:0 5px;border-radius:3px;color:#fff;font-size:13px;margin-right:2px}
 #panel{display:flex;flex-wrap:wrap;gap:4px 22px;align-items:center;font-size:15px;color:var(--bone2)}
 #panel label{display:flex;align-items:center;gap:6px}
@@ -116,7 +156,7 @@ select{font-family:inherit;font-size:15px;background:#2a221d;color:var(--bone);b
   #wrap{gap:4px 8px;padding-top:max(4px,env(safe-area-inset-top));padding-bottom:max(4px,env(safe-area-inset-bottom))}
   .mv{min-height:34px;font-size:16px}.mv.act{font-size:14px}
   #panel{font-size:11px;gap:4px}#lvl{width:50px}#controls{width:clamp(120px,17vw,170px)}#det{font-size:15px;min-width:2.4em}
-  .card{padding:3px 8px}.card b{font-size:14px}.card .d{display:none}
+  .card,#spells1 .card{padding:6px 8px 6px 21%}.card b{font-size:14px}.card .d{display:none}
   #fluteHoles .note small{display:none}
 }
 }
@@ -169,7 +209,7 @@ body.ingame #bMute{display:none}
       <label><input type="checkbox" id="metro" checked> Metrónomo</label>
       <label><input type="checkbox" id="gMusic" checked> Música</label>
       <span id="src"></span>
-      <button class="btn alt" id="bPauseG" style="width:auto;margin:0;padding:4px 10px;font-size:14px">💾 Guardar / Pausa</button>
+      <button class="btn alt" id="bPauseG" style="width:auto;margin:0;padding:4px 10px;font-size:14px" ><img class="ico" src="interfaz/boton-libro.webp" alt=""> Guardar / Pausa</button>
       <button class="btn alt hidden" id="bRecal" style="width:auto;margin:0;padding:4px 10px;font-size:14px">Afinar micrófono</button>
     </div>
   </div>
@@ -406,7 +446,7 @@ const NOTES={
 };
 const NOTE_ORDER=['SOL','LA','SI'];
 const BPM=66,BEAT=60/BPM,PERFECT=0.2,GOOD=0.4,SPEED=170,HITX=170;
-const pill=n=>`<span class="pill" style="background:${NOTES[n].color}">${NOTES[n].label}</span>`;
+const pill=n=>`<span class="pill pill-${n}" style="background:${NOTES[n].color}">${NOTES[n].label}</span>`;
 const pills=a=>a.map(pill).join('');
 
 // ---------- Imágenes ----------
@@ -1638,7 +1678,7 @@ Object.assign(NOTES,{
   RE2:{label:"RE'",pc:2,midi:86,f:1174.66,step:6,color:'#2f9c95',key:'g',finger:'solo el dedo 2 de la mano izquierda, sin tapar el agujero del pulgar'},
   MI:{label:'MI',pc:4,f:659.25,step:0,color:'#b8962a',key:'w',finger:'el pulgar, los tres dedos de la mano izquierda y el índice y el corazón de la derecha'},
   RE:{label:'RE',pc:2,midi:74,f:587.33,step:-1,color:'#a0522d',key:'q',finger:'el pulgar, los tres dedos de la izquierda y tres de la derecha (todos menos el meñique)'}});
-(()=>{const st=document.createElement('style');st.textContent='#spells1{flex-wrap:wrap}#spells1 .card{flex:1 1 30%;min-width:0}#spells1.many{flex-wrap:nowrap;gap:5px}#spells1.many .card{flex:1 1 0;padding:5px 6px}#spells1.many .card .d{display:none}#spells1.many .card b{font-size:15px}';document.head.appendChild(st);})();
+(()=>{const st=document.createElement('style');st.textContent='#spells1{flex-wrap:wrap}#spells1 .card{flex:1 1 30%;min-width:0}#spells1.many{flex-wrap:nowrap;gap:5px}#spells1.many .card{flex:1 1 0;padding:5px 6px 5px 21%}#spells1.many .card .d{display:none}#spells1.many .card b{font-size:15px}';document.head.appendChild(st);})();
 function mkPad(k,atStart){if($('pad_'+k))return;const n=NOTES[k],b=document.createElement('button');b.className='note hidden';b.id='pad_'+k;b.style.background=n.color;
   b.innerHTML=`${n.label}<small>tecla ${n.key.toUpperCase()}</small>`;b.addEventListener('pointerdown',e=>{e.preventDefault();pressKey(k);});if(atStart)$('pad').prepend(b);else $('pad').appendChild(b);}
 mkPad('RE2',true);mkPad('MI',false);mkPad('RE',false);
