@@ -157,6 +157,7 @@ body.ingame #bMute{display:none}
   <audio id="mCuna" src="audio/cancion-de-cuna.mp3" loop preload="auto"></audio>
   <audio id="mMonaca" src="audio/salmo-monaca.mp3" loop preload="auto"></audio>
   <audio id="mGuard" src="audio/guardianes.mp3" loop preload="auto"></audio>
+  <audio id="mDottore" src="audio/dottore.mp3" loop preload="auto"></audio>
   <button id="bMute" title="Música" aria-label="Silenciar la música">🔊</button>
   <div class="overlay" id="title"><div id="mstage">
     <img id="menuBg" alt="El Flautista camina por un muelle de Venecia de noche, con una rata a sus pies">
@@ -1265,7 +1266,7 @@ async function c1s5(){ // La casa de cuarentena
   await fade(1,.8);
 }
 async function c1s6(){ // Combate
-  S.fade=1;const cb=combatC1();await fade(0,.8);await cb;
+  S.fade=1;musicPlay('dottore');const cb=combatC1();await fade(0,.8);await cb;
   $('hudL').classList.add('hidden');$('hudR').classList.add('hidden');
 }
 async function c1s7(){ // La carta, el recuerdo y el libro
@@ -1954,14 +1955,14 @@ $('bAgain').onclick=()=>{location.reload();};
 $('spMel').innerHTML=pills(ENJ);$('spCard').disabled=true;setMoveUI(false);
 
 // ---------- Música (empieza con el primer toque: los navegadores bloquean el autoplay) ----------
-const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard')};let curM='menu',unlocked=false,muted=false;
+const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard'),dottore:$('mDottore')};let curM='menu',unlocked=false,muted=false;
 Object.values(TR).forEach(a=>a.volume=0);
 try{muted=localStorage.getItem('ptp_mute')==='1';}catch(e){}
 function musicPlay(n){curM=n;}
 function wantVol(n){if(muted||n!==curM)return 0;
   if(n==='game'){const busy=['tut','exodo','combat','combat1','stillstaff'].includes(S.mode)||!!P||CAL.on;if(busy)return useMic?0:.12;return .4;}
   if(n==='cuna')return useMic&&(P||CAL.on)?0:(P?.15:.55);
-  if(n==='monaca'||n==='guardianes')return (P||CAL.on)?(useMic?0:.15):.45;return .7;}
+  if(n==='monaca'||n==='guardianes'||n==='dottore')return (P||CAL.on)?(useMic?0:.15):.45;return .7;}
 setInterval(()=>{for(const n in TR){const a=TR[n],w=wantVol(n);if(w>0&&a.paused&&(unlocked||!a._tried)){a._tried=1;a.play().catch(()=>{});}
   const d=w-a.volume;a.volume=Math.max(0,Math.min(1,a.volume+Math.sign(d)*Math.min(Math.abs(d),.035)));if(w===0&&a.volume<.01&&!a.paused)a.pause();}},80);
 function unlock(e){if(!unlocked){unlocked=true;if(!$('pressStart').classList.contains('hidden')){$('pressStart').classList.add('hidden');$('menuNav').classList.remove('hidden');if(e){e.preventDefault&&e.type==='keydown'&&e.preventDefault();e.stopImmediatePropagation();}}}}
