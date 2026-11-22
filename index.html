@@ -198,7 +198,7 @@ body.ingame #bMute{display:none}
   </div>
   <div class="mpanel hidden" id="pMode"><div class="box">
     <h2>¿Cómo vas a tocar?</h2>
-    <p class="small">Camina con ◀ ▶ o las flechas, mira las cosas con E y pasa los diálogos con Espacio o tocando el cuadro de texto. Las ratas obedecen a tres notas: <span class="pill" style="background:var(--si)">SI</span><span class="pill" style="background:var(--la)">LA</span><span class="pill" style="background:var(--sol)">SOL</span> (teclado: L K J).</p>
+    <p class="small">Camina haciendo clic o tocando el escenario (o con ◀ ▶ y las flechas), mira las cosas tocando el rombo dorado o con E y pasa los diálogos con Espacio o tocando el cuadro de texto. Las ratas obedecen a tres notas: <span class="pill" style="background:var(--si)">SI</span><span class="pill" style="background:var(--la)">LA</span><span class="pill" style="background:var(--sol)">SOL</span> (teclado: L K J).</p>
     <button class="btn" id="bMic">🎵 Con la flauta (micrófono)</button>
     <button class="btn alt" id="bKey">Sin flauta (teclado o botones)</button>
     <label class="small"><input type="checkbox" id="freeT"> Modo sin ritmo (solo cuenta el orden de las notas)</label>
@@ -670,27 +670,60 @@ function walkScene(cfg){
   say(cfg.hint||'');
   return new Promise(res=>{S.walk.res=res;});
 }
-function nearSpot(){const W=S.walk;if(!W)return null;return W.spots.find(s=>!s.auto&&!(s.once&&W.done.has(s.id))&&Math.abs(W.x-s.x)<(s.r||60))||null;}
-async function triggerSpot(s){const W=S.walk;W.busy=true;keys.left=keys.right=false;W.done.add(s.id);await s.fn();W.busy=false;}
+// Puntos de interés: x,y = dónde está la marca en el dibujo; wx = hasta dónde camina el Flautista (por defecto x);
+// at() = posición que se mueve (p. ej. un personaje que te sigue). Se puede caminar con clic/toque o con ◀ ▶.
+function spotOK(s){const W=S.walk;return !s.auto&&!(s.once&&W.done.has(s.id));}
+function spotPos(s){const W=S.walk;if(s.at)return s.at();return {x:s.x,y:s.y??W.y-150};}
+function spotWX(s){const W=S.walk;const x=s.at?s.at().x:(s.wx??s.x);return Math.max(W.minX,Math.min(W.maxX,x));}
+function spotNear(s){const W=S.walk;return Math.abs(W.x-spotWX(s))<(s.r||60);}
+function nearSpot(){const W=S.walk;if(!W)return null;let best=null,bd=1e9;W.spots.forEach(s=>{if(!spotOK(s)||!spotNear(s))return;const d=Math.abs(W.x-spotWX(s));if(d<bd){bd=d;best=s;}});return best;}
+function stopMove(){keys.left=keys.right=false;const W=S.walk;if(W){W.target=null;W.goSpot=null;}}
+async function triggerSpot(s){const W=S.walk;W.busy=true;stopMove();const px=spotPos(s).x;if(Math.abs(px-W.x)>8)W.face=px<W.x?-1:1;W.done.add(s.id);await s.fn();W.busy=false;}
+function spotAt(x,y){const W=S.walk;if(!W)return null;let best=null,bd=1e9;W.spots.forEach(s=>{if(!spotOK(s))return;const p=spotPos(s);const d=Math.hypot(x-p.x,(y-p.y)*1.1);if(d<(TOUCH?62:44)&&d<bd){bd=d;best=s;}});return best;}
+function walkClick(x,y){const W=S.walk;if(!W||W.busy||D)return;
+  const s=spotAt(x,y);
+  if(s){if(spotNear(s)){triggerSpot(s);return;}W.target=spotWX(s);W.goSpot=s;W.tap={x:W.target,t:gt};return;}
+  W.goSpot=null;W.target=x>=W.exitX-40?W.maxX:Math.max(W.minX,Math.min(W.maxX,x));W.tap={x:W.target,t:gt};}
 function updateWalk(dt){
   const W=S.walk;if(!W||W.busy||D)return;
-  let v=0;if(keys.left)v-=1;if(keys.right)v+=1;W.moving=v!==0;if(v)W.face=v;
-  W.x=Math.max(W.minX,Math.min(W.maxX,W.x+v*120*dt));
+  let v=0;if(keys.left)v-=1;if(keys.right)v+=1;
+  if(v){W.target=null;W.goSpot=null;}
+  let arrived=false;
+  if(!v&&W.target!=null){const d=W.target-W.x;if(Math.abs(d)>2)v=Math.sign(d);else{W.x=W.target;W.target=null;arrived=true;}}
+  W.moving=v!==0;if(v)W.face=v;
+  let nx=W.x+v*120*dt;if(W.target!=null&&!keys.left&&!keys.right&&(nx-W.target)*v>0)nx=W.target;
+  W.x=Math.max(W.minX,Math.min(W.maxX,nx));
+  if(W.target!=null&&(W.x<=W.minX&&v<0||W.x>=W.maxX&&v>0)&&Math.abs(W.target-W.x)>2&&W.x!==W.target){W.target=W.x;}
   for(const s of W.spots)if(s.auto&&!W.done.has(s.id)&&Math.abs(W.x-s.x)<(s.r||40)){triggerSpot(s);return;}
-  if(W.x>=W.exitX-2&&v>0){if(W.need.every(id=>W.done.has(id))){const r=W.res;S.walk.busy=true;r();}else{if(!W.warned||gt-W.warned>3){W.warned=gt;say(W.blocked);}}}
+  if(arrived&&W.goSpot){const s=W.goSpot;W.goSpot=null;if(spotOK(s)){triggerSpot(s);return;}}
+  if(W.x>=W.exitX-2&&v>0){if(W.need.every(id=>W.done.has(id))){const r=W.res;S.walk.busy=true;stopMove();r();}else{if(!W.warned||gt-W.warned>3){W.warned=gt;say(W.blocked);}}}
 }
 function drawWalk(t,dt){
   const W=S.walk;drawCover(IMG[S.img]);if(W.extra)W.extra(t,dt);if(W.fog)drawFog(dt,W.fog);
-  // marcas de interés
-  W.spots.forEach(s=>{if(s.auto||(s.once&&W.done.has(s.id)))return;const near=Math.abs(W.x-s.x)<(s.r||60);const y=(s.y??W.y-150)+Math.sin(t*3+s.x)*3;
-    ctx.save();ctx.globalAlpha=near?1:.55;ctx.shadowColor='#e0b04a';ctx.shadowBlur=near?14:6;ctx.fillStyle='#e0b04a';ctx.beginPath();ctx.moveTo(s.x,y-9);ctx.lineTo(s.x+7,y);ctx.lineTo(s.x,y+9);ctx.lineTo(s.x-7,y);ctx.closePath();ctx.fill();
-    if(near){ctx.shadowBlur=4;ctx.font='italic 17px Georgia';ctx.textAlign='center';ctx.fillStyle='#efe3c8';ctx.fillText(s.label+' (E)',s.x,y-16);}ctx.restore();});
+  // destino del clic
+  if(W.target!=null&&W.tap){const k=Math.min(1,(gt-W.tap.t)/.5);ctx.save();ctx.globalAlpha=.75*(1-k*.4);ctx.strokeStyle='#e0b04a';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(W.tap.x,W.y+2,10+k*10,3+k*3,0,0,7);ctx.stroke();ctx.restore();}
+  // marcas de interés (sobre el elemento del dibujo al que se refieren)
+  const labels=[];
+  W.spots.forEach(s=>{if(!spotOK(s))return;const near=spotNear(s),hov=W.hover===s||W.goSpot===s;const p=spotPos(s);const x=p.x,y=p.y+Math.sin(t*3+p.x)*3;
+    ctx.save();const pul=.5+.5*Math.sin(t*4+p.x);
+    ctx.globalAlpha=near||hov?.9:.35+.25*pul;ctx.strokeStyle='#e0b04a';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,14+pul*4,0,7);ctx.stroke();
+    ctx.globalAlpha=near||hov?1:.7;ctx.shadowColor='#e0b04a';ctx.shadowBlur=near||hov?14:8;ctx.fillStyle='#e0b04a';ctx.beginPath();ctx.moveTo(x,y-9);ctx.lineTo(x+7,y);ctx.lineTo(x,y+9);ctx.lineTo(x-7,y);ctx.closePath();ctx.fill();
+    if(near||hov)labels.push([s.label+(near&&!TOUCH?' (E)':''),x,y]);ctx.restore();});
   const bob=W.moving?Math.abs(Math.sin(t*9))*3:0,sway=0;
   shadowAt(W.x,W.y,34*W.s/.6);
   ctx.save();ctx.translate(W.x,W.y);ctx.rotate(sway);ctx.translate(-W.x,-W.y);
   if(!flaAnim(W.moving?'caminar':'reposo',W.x,W.y,{flip:W.face<0,s:W.s}))cspr('flautista-lado',W.x,W.y-bob,{flip:W.face<0,s:W.s,sy:1+Math.sin(t*2)*.008});ctx.restore();
   if(W.redEyes)redEyes(W.x+(W.face<0?-5:5)*W.s/.6,W.y-W.s*318,1.2);
+  // rótulos encima de todo
+  labels.forEach(([txt,x,y])=>{ctx.save();ctx.font='italic 17px Georgia';ctx.textAlign=x<80?'left':x>880?'right':'center';const lx=x<80?x-10:x>880?x+10:x;
+    ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.75)';ctx.lineJoin='round';ctx.strokeText(txt,lx,y-22);ctx.fillStyle='#efe3c8';ctx.fillText(txt,lx,y-22);ctx.restore();});
 }
+// clic / toque en el escenario
+let TOUCH=false;
+function cvXY(e){const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*960,y:(e.clientY-r.top)/r.height*540};}
+cv.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')TOUCH=true;if(paused||S.mode!=='walk')return;const {x,y}=cvXY(e);walkClick(x,y);});
+cv.addEventListener('pointermove',e=>{const W=S.walk;if(S.mode!=='walk'||!W){cv.style.cursor='';return;}const {x,y}=cvXY(e);W.hover=e.pointerType==='mouse'?spotAt(x,y):null;cv.style.cursor=W.hover?'pointer':'';});
+cv.addEventListener('pointerleave',()=>{if(S.walk)S.walk.hover=null;cv.style.cursor='';});
 
 // ---------- Granero (tutorial) ----------
 const HIDE=[[95,505],[200,470],[300,455],[455,452],[560,430],[640,452],[700,480],[60,400],[380,470],[520,488]];
@@ -924,7 +957,7 @@ document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='arrowl
   const on=e=>{e.preventDefault();keys[dir]=true;b.classList.add('on');};const off=()=>{keys[dir]=false;b.classList.remove('on');};
   b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off));});
 $('bAct').addEventListener('click',act);
-function togglePause(){paused=!paused;$('pause').classList.toggle('hidden',!paused);keys.left=keys.right=false;if(paused){$('saveMsg').textContent='';slotsUI();}}
+function togglePause(){paused=!paused;$('pause').classList.toggle('hidden',!paused);stopMove();if(paused){$('saveMsg').textContent='';slotsUI();}}
 $('bResume').onclick=togglePause;
 $('bPauseG').onclick=e=>{e.currentTarget.blur();if(!paused)togglePause();};
 function setMoveUI(on){$('bLeft').disabled=!on;$('bRight').disabled=!on;}
@@ -944,12 +977,12 @@ async function scene0(){
 async function scene1(){
   setMoveUI(true);S.fade=1;
   const p=walkScene({img:'fondamenta',y:515,s:.7,start:70,exitX:905,need:['bando'],blocked:'Antes de buscar trabajo, mira el bando del tablón.',
-    hint:'Camina con ◀ ▶ (o las flechas). Pulsa <b>Mirar</b> (E) junto al rombo dorado.',
+    hint:'Haz clic (o toca) donde quieras ir. Toca el rombo dorado para mirar. También puedes usar ◀ ▶ y E.',
     extra:(t)=>{[[120,470],[300,500],[540,520],[760,505]].forEach(([x,y],i)=>{const k=(t*.25+i*.3)%1;spr(runF(t,i),x+((k*240)%240)-120,y,.7,i%2===0);});},
     spots:[
-      {id:'bando',x:205,label:'Bando',once:true,fn:()=>dialog([L('Bando de la Sanità','«La Magistratura de la Sanidad pagará MIL DUCADOS de oro a quien libre la ciudad de la plaga de ratas.»'),L('El Flautista','Mil ducados. Venecia siempre promete en grande.')])},
-      {id:'sacos',x:110,label:'Sacos',once:true,fn:()=>dialog([N('Las ratas roen el grano a plena luz. Nadie se atreve a espantarlas: dicen que muerden a los niños mientras duermen.')])},
-      {id:'agua',x:760,label:'Laguna',once:true,fn:()=>dialog([N('Al fondo, la isla de San Michele. Las campanas suenan para nadie.')])}
+      {id:'bando',x:158,y:245,label:'Bando',once:true,fn:()=>dialog([L('Bando de la Sanità','«La Magistratura de la Sanidad pagará MIL DUCADOS de oro a quien libre la ciudad de la plaga de ratas.»'),L('El Flautista','Mil ducados. Venecia siempre promete en grande.')])},
+      {id:'sacos',x:150,y:440,label:'Sacos',once:true,fn:()=>dialog([N('Las ratas roen el grano a plena luz. Nadie se atreve a espantarlas: dicen que muerden a los niños mientras duermen.')])},
+      {id:'agua',x:790,y:245,label:'Laguna',once:true,fn:()=>dialog([N('Al fondo, la isla de San Michele. Las campanas suenan para nadie.')])}
     ]});
   await fade(0,1.2);await p;setMoveUI(false);say('');
   await fade(1,.8);still('tano',{z0:1.05,z1:1.14,x0:.6,x1:.45,dur:12});await fade(0,1);
@@ -1025,8 +1058,8 @@ async function scene5(){
       {id:'v1',x:250,auto:true,fn:()=>dialog([L('Una mujer, tras una ventana','Dicen que empezó en San Clemente. Con un carpintero.')])},
       {id:'v2',x:470,auto:true,fn:()=>dialog([L('Un barquero','Mentira. Empezó cuando llegó el de la flauta. Las ratas se fueron, pero dejaron la peste.')])},
       {id:'v3',x:700,auto:true,fn:()=>dialog([L('Una niña','Mi madre dice que el de rojo es el mismo de la leyenda. Que no envejece nunca.')])},
-      {id:'puerta',x:840,label:'Puerta clavada',once:true,fn:()=>dialog([N('Tablones clavados desde fuera. Una cruz roja pintada.',{sfx:knock}),N('Desde dentro, alguien sigue golpeando.',{sfx:knock})])},
-      {id:'carro',x:150,label:'Carro',once:true,fn:()=>dialog([N('Bultos bajo sábanas blancas. Nadie se acerca a recogerlos.')])}
+      {id:'puerta',x:752,y:370,label:'Puerta clavada',once:true,fn:()=>dialog([N('Tablones clavados desde fuera. Una cruz roja pintada.',{sfx:knock}),N('Desde dentro, alguien sigue golpeando.',{sfx:knock})])},
+      {id:'carro',x:268,y:345,label:'Carro',once:true,fn:()=>dialog([N('Bultos bajo sábanas blancas. Nadie se acerca a recogerlos.')])}
     ]});
   await fade(0,1.2);await p;setMoveUI(false);say('');await fade(1,1);
 }
@@ -1066,12 +1099,12 @@ async function scene8(){
     hint:'No recuerdas nada. Mira a tu alrededor.',
     extra:(t,dt)=>{const W=S.walk;const tx=W.x+(W.face>0?-70:70);pulce.x+=(tx-pulce.x)*Math.min(1,dt*2);const mv=Math.abs(tx-pulce.x)>4;
       spr(mv?runF(t,1):'reposo-alerta',pulce.x,W.y+4,.75,mv?tx<pulce.x:W.x<pulce.x);
-      ctx.fillStyle='rgba(190,200,210,.10)';ctx.beginPath();ctx.ellipse(650,505,60,10,0,0,7);ctx.fill();},
+      ctx.fillStyle='rgba(190,200,210,.10)';ctx.beginPath();ctx.ellipse(770,462,60,10,0,0,7);ctx.fill();},
     spots:[
-      {id:'pulce',x:330,label:'Rata',once:true,fn:()=>dialog([N('Una rata pequeña con la oreja mordida se acerca y te olfatea la mano.'),N('Te muerde un dedo.'),L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.')])},
-      {id:'cadenas',x:470,label:'Cadenas',once:true,fn:()=>dialog([N('Cadenas rotas, roídas. ¿Quién te las puso? ¿Por qué?')])},
-      {id:'moneda',x:560,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos, una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),N('Al tocarla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('No entiendes nada. Pero la guardas.')]);musicPlay('game');}},
-      {id:'charco',x:650,label:'Charco',once:true,fn:async()=>{S.walk.redEyes=true;await dialog([N('En el agua quieta, tu reflejo. Tus ojos brillan rojos.'),N('No recuerdas tu nombre. Ni esta ciudad. Ni nada.')]);}}
+      {id:'pulce',x:330,at:()=>({x:pulce.x,y:S.walk.y-58}),r:110,label:'Rata',once:true,fn:()=>dialog([N('Una rata pequeña con la oreja mordida se acerca y te olfatea la mano.'),N('Te muerde un dedo.'),L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.')])},
+      {id:'cadenas',x:420,y:365,label:'Cadenas',once:true,fn:()=>dialog([N('Cadenas rotas, roídas. ¿Quién te las puso? ¿Por qué?')])},
+      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos, una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),N('Al tocarla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('No entiendes nada. Pero la guardas.')]);musicPlay('game');}},
+      {id:'charco',x:770,y:450,label:'Charco',once:true,fn:async()=>{S.walk.redEyes=true;await dialog([N('En el agua quieta, tu reflejo. Tus ojos brillan rojos.'),N('No recuerdas tu nombre. Ni esta ciudad. Ni nada.')]);}}
     ]});
   await fade(0,1);await p;setMoveUI(false);say('');
   S.overlay=(t)=>{const im=IMG.libro;if(!ready(im))return;const k=Math.min(1,(gt-S.ovT)/1.2);ctx.save();ctx.globalAlpha=.9*k;ctx.fillStyle='#000';ctx.fillRect(0,0,960,540);ctx.globalAlpha=k;
@@ -1265,14 +1298,14 @@ async function c1s1(){ // Fondamenta de Cannaregio
       if(med.x<1000){shadowAt(med.x,FY,30);if(!(med.gone!=null&&dotAnim('caminar',med.x,FY,{s:R?.55:.5,flip:med.face<0,filter:'brightness(.6) saturate(.6)'})))cspr('dottore-lado',med.x,FY,{s:R?.55:.5,flip:med.face<0,filter:'brightness(.6) saturate(.6)'});
         const lx=med.x+(med.face<0?-22:22),ly=FY-45,fl=.7+.3*Math.sin(t*11),rg=ctx.createRadialGradient(lx,ly,2,lx,ly,40);rg.addColorStop(0,`rgba(255,180,80,${.3*fl})`);rg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=rg;ctx.fillRect(lx-40,ly-40,80,80);}},
     spots:[
-      {id:'bando',x:R?100:205,label:'Bando nuevo',once:true,fn:()=>dialog([L('Bando de la Sanità','«SE BUSCA al brujo de las ratas, el hombre del abrigo rojo. CIEN DUCADOS a quien lo entregue, vivo o muerto.»'),L('El Flautista','Cien ducados. Valgo menos de lo que me deben.')])},
+      {id:'bando',x:R?95:158,y:R?278:245,label:'Bando nuevo',once:true,fn:()=>dialog([L('Bando de la Sanità','«SE BUSCA al brujo de las ratas, el hombre del abrigo rojo. CIEN DUCADOS a quien lo entregue, vivo o muerto.»'),L('El Flautista','Cien ducados. Valgo menos de lo que me deben.')])},
       {id:'voces',x:R?360:470,auto:true,r:30,fn:()=>dialog([L('Un médico, al otro lado del canal','Il Dottore jura que lo vio salir del agua. Desde su ventana, al amanecer.'),L('Otro médico','Los ahogados no salen del agua.'),L('Un médico','Este sí. Por eso ha mandado quemar todas las ratas del barrio.')])},
-      {id:'medico',x:R?600:720,label:'Médico de guardia',once:true,fn:async()=>{
+      {id:'medico',x:R?700:820,wx:R?620:720,y:FY-185,label:'Médico de guardia',once:true,fn:async()=>{
         await dialog([N('Un médico del pico vigila el final del muelle con un farol. No te ha visto todavía.'),N(`Llama a las ratas de los sacos con ${pill('SI')} («venid») y mándalas lejos con ${pill('SOL')} («seguidme»).`)]);
         await waitNotes(['SI','SOL'],'Toca SI y luego SOL',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SI')}.`)});say('');
         runRats=gt;squeaks(10);await wait(.8);
         await dialog([L('El médico','¡Ratas! ¡Por allí! ¡Traed fuego!',{sfx:()=>{med.gone=gt;}})]);await wait(1.2);}},
-      {id:'agua',x:R?480:560,label:'Canal',once:true,fn:()=>dialog([N('En el agua flota un sombrero de ala ancha. Más allá, una barca cargada de cuerpos se aleja hacia el norte.')])}
+      {id:'agua',x:R?480:560,y:R?495:330,label:'Canal',once:true,fn:()=>dialog([N('En el agua flota un sombrero de ala ancha. Más allá, una barca cargada de cuerpos se aleja hacia el norte.')])}
     ]});
   await fade(0,1.2);await p;setMoveUI(false);say('');await fade(1,.8);
 }
@@ -1339,11 +1372,11 @@ async function c1s5(){ // La casa de cuarentena
       if(showD){const dx=TX;shadowAt(dx,fy(dx),30);cspr('dottore-lado',dx,fy(dx),{s:R?.62:.55,flip:true});}
       if(freedAt!=null){const q=gt-freedAt;for(let i=0;i<8;i++){const x=CX+q*(60+i*12)*(i%2?1:-1)*.6+i*4,y=fy(Math.max(0,x));if(q<4)spr(runF(t,i),x,y,.6,(i%2)===0);}}},
     spots:[
-      {id:'jaulas',x:CX,label:'Jaulas',once:true,fn:async()=>{
+      {id:'jaulas',x:CX,y:R?315:340,label:'Jaulas',once:true,fn:async()=>{
         await dialog([N('Jaulas de hierro llenas de ratas, encima de un montón de leña y paja. Alguien piensa quemarlas esta noche.'),N(`Ábreles con ${pill('SI')} ${pill('LA')}: «venid» y «quietas», para que salgan sin hacer ruido.`)]);
         await waitNotes(['SI','LA'],'Toca SI y luego LA',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SI')}.`)});say('');
         freedAt=gt;stats.c1.freed=true;squeaks(8);await dialog([N('Los cerrojos ceden a dentelladas. Las ratas salen y se quedan cerca de ti.'),N('<b>Las ratas liberadas se unen al enjambre: tu Enjambre hará más daño.</b>')]);}},
-      {id:'puerta',x:R?258:60,label:'Puerta clavada',once:true,fn:()=>dialog([N('Una cruz roja pintada. Tablones clavados desde fuera.'),N('Por la rendija sale olor a vinagre, a incienso y a algo más. Dentro no se oye a nadie.'),
+      {id:'puerta',x:R?262:60,y:R?290:undefined,label:'Puerta clavada',once:true,fn:()=>dialog([N('Una cruz roja pintada. Tablones clavados desde fuera.'),N('Por la rendija sale olor a vinagre, a incienso y a algo más. Dentro no se oye a nadie.'),
         N('En el suelo, junto a la puerta, frascos vacíos con la etiqueta de la botica del barrio. Las medicinas estaban aquí.')])}
     ]});
   await fade(0,1.2);await p;setMoveUI(false);say('');
@@ -1442,13 +1475,13 @@ async function c2s1(){ // Fondamenta degli Ormesini: pasar sin que te vea el gua
         if(faceL){ctx.save();const cg=ctx.createLinearGradient(lx,0,lx-380,0);cg.addColorStop(0,'rgba(255,200,110,.32)');cg.addColorStop(1,'rgba(255,200,110,0)');ctx.fillStyle=cg;
           ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx-380,FY-190);ctx.lineTo(lx-380,FY+10);ctx.closePath();ctx.fill();ctx.restore();}
         if(L==='turn'){ctx.save();ctx.fillStyle='#e0b04a';ctx.font='bold 34px Georgia';ctx.textAlign='center';ctx.fillText('!',gx,FY-215+Math.sin(t*20)*2);ctx.restore();}
-        if(faceL&&W&&!W.busy&&!D&&W.moving&&W.x>gx-390&&W.x<gx&&gt-g.caught>2){g.caught=gt;thud();W.x=150;keys.left=keys.right=false;
+        if(faceL&&W&&!W.busy&&!D&&W.moving&&W.x>gx-390&&W.x<gx&&gt-g.caught>2){g.caught=gt;thud();W.x=150;stopMove();
           say('<b>«¡Alto! ¿Quién anda ahí?»</b> Te escondes a tiempo en un portal y vuelves atrás. Espera a que el guardia mire hacia el otro lado.');}}
       if(rats!=null){const q=gt-rats;for(let i=0;i<8;i++){const x=470+q*220+i*20;if(x<760)spr(runF(t,i),x,FY-4+(i%3)*5,.62,false);}}},
     spots:[
-      {id:'bando',x:120,label:'Bando',once:true,fn:()=>dialog([L('Bando de la Sanità','«El Ghetto permanece cerrado de día y de noche. Sus habitantes son sospechosos de traer el contagio. Quien les dé comida o agua será castigado.»'),
+      {id:'bando',x:R?120:95,y:R?undefined:278,label:'Bando',once:true,fn:()=>dialog([L('Bando de la Sanità','«El Ghetto permanece cerrado de día y de noche. Sus habitantes son sospechosos de traer el contagio. Quien les dé comida o agua será castigado.»'),
         L('El Flautista','Sospechosos. Siempre hay alguien a quien echarle la culpa.')])},
-      {id:'reja',x:470,label:'Rejilla del desagüe',once:true,fn:async()=>{
+      {id:'reja',x:R?470:452,y:R?undefined:368,label:'Rejilla del desagüe',once:true,fn:async()=>{
         await dialog([N('Pulce se mete entre tus botas y araña una rejilla baja en el muro. Por debajo corre un desagüe que pasa al otro lado de la puerta.'),
           N(`Manda a las ratas por el desagüe con ${pill('SOL')} («seguidme») y llámalas desde dentro con ${pill('SI')} («venid»). Harán ruido al otro lado.`)]);
         await waitNotes(['SOL','SI'],'Toca SOL y luego SI',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SOL')}.`)});say('');
@@ -1797,10 +1830,10 @@ async function c3s1(){ // La cripta
         const g=ctx.createLinearGradient(0,123,0,384);g.addColorStop(0,'#050404');g.addColorStop(1,'#1a120c');ctx.fillStyle=g;ctx.fillRect(760,120,160,270);
         ctx.drawImage(im,755*f,118*f,166*f,268*f,755,118-k*230,166,268);ctx.restore();}},
     spots:[
-      {id:'nichos',x:150,label:'Calaveras',once:true,fn:()=>dialog([N('Cientos de calaveras ordenadas en nichos. Algunas tienen un nombre escrito con carbón en la frente.'),N('Las más nuevas no tienen nombre. Solo una fecha: junio de 1630.')])},
+      {id:'nichos',x:315,y:235,label:'Calaveras',once:true,fn:()=>dialog([N('Cientos de calaveras ordenadas en nichos. Algunas tienen un nombre escrito con carbón en la frente.'),N('Las más nuevas no tienen nombre. Solo una fecha: junio de 1630.')])},
       {id:'canto',x:300,auto:true,r:30,fn:()=>dialog([N('Del fondo de la cripta llega un canto. Una voz de mujer, sola, que no toma aire nunca.'),N('Pulce se pone a dar vueltas sobre sí misma, chillando. El canto confunde a las ratas.'),L('El Flautista','Tranquila. Escúchame a mí.')])},
-      {id:'carpintero',x:520,label:'Ataúd nuevo',once:true,fn:c3carpintero},
-      {id:'reja',x:790,label:'Reja de huesos',once:true,fn:async()=>{
+      {id:'carpintero',x:520,y:405,label:'Ataúd nuevo',once:true,fn:c3carpintero},
+      {id:'reja',x:838,y:250,label:'Reja de huesos',once:true,fn:async()=>{
         await dialog([N('Una reja hecha con fémures atados con alambre. Detrás, el canto suena más fuerte.'),N(`La cripta devuelve cada sonido. Toca <b>Eco</b> ${pills(SPELLS.eco.notes)} y las ratas del otro lado repetirán tu orden.`)]);
         await waitNotes(SPELLS.eco.notes,"Toca SI, DO' y RE'",{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SI')}.`)});say('');
         open=gt;squeaks(8);await wait(1);await dialog([N('Las notas rebotan en las bóvedas. Al otro lado, decenas de ratas roen el alambre a la vez. La reja se levanta.')]);}}
@@ -1879,7 +1912,7 @@ async function c3s5(){ // La crecida: el puente de ratas
     extra:(t,dt)=>{pf(t,dt);
       if(raft!=null){const k=Math.min(1,(gt-raft)/2);const n=Math.floor(27*k);for(let i=0;i<n;i++){const x=318+i*13,y=299+Math.sin(t*3+i)*2+(i%2)*3;spr(i%3?'defensa-trepa':'reposo-sentada',x,y,.5,i%2===0);}}
       const lv=Math.min(40,(gt-t0)*1.2);ctx.fillStyle='rgba(30,70,62,.28)';ctx.fillRect(0,540-lv-20,960,lv+20);},
-    spots:[{id:'agua',x:285,label:'Canal',once:true,fn:async()=>{
+    spots:[{id:'agua',x:450,y:340,wx:285,label:'Canal',once:true,fn:async()=>{
       await dialog([N('El puente de madera está roto y el agua sube deprisa. El otro lado queda demasiado lejos para saltar.'),
         N(`Con el ${pill('MI')} las ratas entienden «al agua». Toca <b>Marea</b> ${pills(SPELLS.marea.notes)}.`)]);
       await waitNotes(SPELLS.marea.notes,'Toca MI, SOL y LA',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('MI')}.`)});say('');
@@ -1925,8 +1958,8 @@ async function c4s1(){ // Las cloacas
     hint:'Las cloacas bajo San Marcos.',
     extra:(t,dt)=>{if(!hide)pf(t,dt);drawCages(t,null);},
     spots:[
-      {id:'jaula',x:350,label:'Jaula colgada',once:true,fn:()=>dialog([N('Una jaula de hierro colgada de una cuerda, demasiado alta. Dentro, ratas que llevan días sin comer.'),N('Tus ratas no llegan hasta ella. Haría falta algo que royera la cuerda.')])},
-      {id:'marca',x:590,label:'Pintada',once:true,fn:()=>dialog([N('En la pared, con pintura roja, el león de la Sanità y una frase: «Martes y viernes, fuego».'),N('Debajo, el suelo está negro de hollín.')])},
+      {id:'jaula',x:CAGES[1].x,y:CAGES[1].y-45,label:'Jaula colgada',once:true,fn:()=>dialog([N('Una jaula de hierro colgada de una cuerda, demasiado alta. Dentro, ratas que llevan días sin comer.'),N('Tus ratas no llegan hasta ella. Haría falta algo que royera la cuerda.')])},
+      {id:'marca',x:470,y:300,label:'Pintada',once:true,fn:()=>dialog([N('En la pared, con pintura roja, el león de la Sanità y una frase: «Martes y viernes, fuego».'),N('Debajo, el suelo está negro de hollín.')])},
       {id:'rugido',x:760,auto:true,r:30,fn:async()=>{thud(.4);await dialog([N('Un rugido que no es de ningún animal: son cientos de chillidos a la vez.'),N('Pulce se mete de un salto en tu bolsa y no quiere salir.',{sfx:()=>{hide=true;}})]);}}
     ]});
   await fade(0,1.2);await p;setMoveUI(false);say('');await fade(1,.8);
@@ -2006,7 +2039,7 @@ async function c4s5(){ // Liberar las jaulas
   const p=walkScene({img:'c4_cloaca',y:472,s:.62,start:60,exitX:905,need:['j0','j1','j2','j3'],fog:.6,blocked:'Todavía quedan ratas enjauladas.',
     hint:'De vuelta por las cloacas. Libera las jaulas.',
     extra:(t,dt)=>{pf(t,dt);drawCages(t,st);},
-    spots:CAGES.map((c,i)=>({id:'j'+i,x:c.x,label:'Jaula',once:true,fn:cut(i)}))});
+    spots:CAGES.map((c,i)=>({id:'j'+i,x:c.x,y:c.y-45,label:'Jaula',once:true,fn:cut(i)}))});
   await fade(0,1.2);await p;setMoveUI(false);say('');await fade(1,.8);
 }
 async function c4s6(){ // Amanecer en casa de Bettina
@@ -2133,12 +2166,12 @@ async function c5s1(){ // Las gradas
     hint:'Las gradas del Arsenal.',
     extra:(t,dt)=>{hammers(t);if(!frozen)pf(t,dt);else{spr('reposo-alerta',S.walk.x-60,472,.62,false);}forgeGlow(t,350,440,90,.35);forgeGlow(t,740,440,90,.35);},
     spots:[
-      {id:'jaulas',x:170,label:'Jaulas',once:true,fn:()=>dialog([N('Jaulas nuevas, apiladas hasta el techo. Cada una lleva pintado el león de la Sanità.'),N('Son pequeñas para un perro y grandes para una rata. Prefieres no pensar para quién son.')])},
-      {id:'barca',x:430,label:'Barca',once:true,fn:()=>dialog([N('Una barca amarrada a la grada, tapada con una lona. Debajo se mueve algo.'),
+      {id:'jaulas',x:490,y:340,label:'Jaulas',once:true,fn:()=>dialog([N('Jaulas nuevas, apiladas hasta el techo. Cada una lleva pintado el león de la Sanità.'),N('Son pequeñas para un perro y grandes para una rata. Prefieres no pensar para quién son.')])},
+      {id:'barca',x:255,y:250,label:'Barca',once:true,fn:()=>dialog([N('Una barca amarrada a la grada, tapada con una lona. Debajo se mueve algo.'),
         N('Levantas una esquina. Una mujer con un niño dormido en brazos te mira sin miedo, ya sin fuerzas para tenerlo.'),
         L('La mujer','¿Ya nos vamos al Lazzaretto?'),L('El Flautista','No lo sé.'),L('La mujer','Dicen que de allí no vuelve nadie. Pero aquí tampoco nos dejan quedarnos.'),
         N('Las cadenas de la barca están cerradas con candado. Ahora no puedes hacer nada.')])},
-      {id:'muerto',x:620,label:'Obrero',once:true,fn:()=>dialog([N('Un obrero sentado contra un casco, con el martillo todavía en la mano. Lleva horas muerto.'),
+      {id:'muerto',x:640,y:420,label:'Obrero',once:true,fn:()=>dialog([N('Un obrero sentado contra un casco, con el martillo todavía en la mano. Lleva horas muerto.'),
         N('Tus ratas se acercan y empiezan a chillar bajito. Repiten lo último que oyó.',{sfx:()=>squeaks(5)}),
         L('Las ratas (voz grave)','Más rápido. El Provveditore las quiere para el martes.'),L('Las ratas (otra voz)','Maestro, no puedo más. No siento las manos.'),
         L('Las ratas (voz grave)','Canta. Si cantas, no lo notas.'),N('Y luego, solo el martillo. Un golpe, otro, otro.')])},
@@ -2342,9 +2375,9 @@ async function c6s1(){ // Entre los bailarines
     hint:'La plaza de San Marcos, llena de bailarines.',
     extra:(t,dt)=>{dancers(t,430,{n:10,s:.85,stop:calm&&gt-calm<6?1:0,dark:.6});tf(t,dt);pf(t,dt);},
     spots:[
-      {id:'mascara',x:330,label:'Máscara en el suelo',once:true,fn:()=>dialog([N('Una máscara de porcelana blanca, pisoteada, con una sonrisa congelada. Por dentro, alguien ha rascado unas letras con una aguja.'),
+      {id:'mascara',x:330,y:455,label:'Máscara en el suelo',once:true,fn:()=>dialog([N('Una máscara de porcelana blanca, pisoteada, con una sonrisa congelada. Por dentro, alguien ha rascado unas letras con una aguja.'),
         N('«PER NON RESTAR MAI SOLA». Para no quedarme nunca sola.'),L('El Flautista','No es la letra de una dama. Es la letra de una niña.')])},
-      {id:'tano',x:600,label:'Tano',once:true,fn:async()=>{
+      {id:'tano',x:600,at:()=>{const W=S.walk;return {x:W.x+(W.face>0?-120:120),y:W.y-170};},r:160,label:'Tano',once:true,fn:async()=>{
         await dialog([N('Una mujer pasa bailando a vuestro lado. Tiene los pies llenos de sangre y llora sin abrir los ojos.'),
           L('Tano','Si sigo el ritmo de la muleta, la pandereta se oye menos. Tócalo conmigo.'),
           N(`<b>Compás</b> ${pills(SPELLS.compas.notes)}: cuatro SOL seguidos, justo cuando la muleta de Tano golpea el suelo. Aquí no importa la melodía: importa el ritmo.`)]);
@@ -2527,20 +2560,20 @@ async function c7s1(){ // San Clemente
     extra:(t,dt)=>{farBells(t,7);if(swing!=null&&gt-swing<4){ctx.save();ctx.strokeStyle='rgba(224,176,74,.5)';ctx.lineWidth=2;for(let w=0;w<3;w++){const k=((gt-swing)*.6+w*.33)%1;ctx.globalAlpha=1-k;ctx.beginPath();ctx.arc(525,215,20+k*120,0,7);ctx.stroke();}ctx.restore();}
       lantern(785,390,t,70);if(tf)tf(t,dt);pf(t,dt);},
     spots:[
-      {id:'campana',x:525,label:'Campanario',once:true,fn:async()=>{swing=gt;bell();
+      {id:'campana',x:525,y:215,label:'Campanario',once:true,fn:async()=>{swing=gt;bell();
         await dialog([N('La campana del campanario se mueve sola. No tiene cuerda. Nadie hay arriba.'),
           N('Greta pone la palma en el muro de piedra y cierra los ojos.'),
           L('Tano','Dice que contesta. Que cada vez que suena una campana en el Lazzaretto, esta responde.'),
           L('Ester','Como si alguien quisiera saber quién entra y quién sale.'),
           L('El Flautista','Alguien que escucha.')]);}},
-      {id:'fosa',x:650,label:'Fosa',once:true,fn:()=>dialog([N('Una fosa a medio tapar, con cruces de madera clavadas de cualquier manera. Aquí enterraron a la gente del embajador.'),
+      {id:'fosa',x:650,y:452,label:'Fosa',once:true,fn:()=>dialog([N('Una fosa a medio tapar, con cruces de madera clavadas de cualquier manera. Aquí enterraron a la gente del embajador.'),
         N('Tus ratas bajan y empiezan a chillar bajito. Repiten lo último que se oyó aquí.',{sfx:()=>squeaks(6)}),
         L('Las ratas (un guardia)','El médico dice que hay fiebre. Que nadie salga en cuarenta días.'),
         L('Las ratas (otra voz)','Orden del Provveditore. Dejad salir a la comitiva mañana. Y que nadie diga que hubo fiebre.'),
         L('Las ratas (el guardia)','¿Y el carpintero? Ha estado con ellos.'),
         L('Las ratas (otra voz)','El carpintero vuelve a casa. Como todos. Nadie ha visto nada.'),
         N('Luego, solo el ruido de una pala.')])},
-      {id:'sacristia',x:785,label:'Sacristía',once:true,fn:async()=>{
+      {id:'sacristia',x:785,y:370,label:'Sacristía',once:true,fn:async()=>{
         await dialog([N('La sacristía tiene la puerta entornada y una vela encendida dentro. Huele a cera y a papel mojado.'),
           L('Ester','El registro de la cuarentena. Si alguien firmó la salida, tiene que estar aquí.'),
           N('Hay un arcón cerrado con cinco anillas de latón, de la más grande a la más pequeña. Cada una vibra con una nota distinta.'),
@@ -2565,13 +2598,13 @@ async function c7s2(){ // El Lazzaretto
       if(lead!=null){for(let i=0;i<4;i++){const x=S.walk.x+40+((gt-lead)*80+i*50)%260;spr('exploradora-olfatea',x,472,.55,false);}}
       if(tf)tf(t,dt);pf(t,dt);c7fog(t,.35,0,960,440);},
     spots:[
-      {id:'camas',x:200,label:'Camas',once:true,fn:()=>dialog([N('Camas de paja, una detrás de otra, hasta donde alcanza la vista. Casi todas vacías. En las que no, nadie se mueve.'),
+      {id:'camas',x:275,y:415,label:'Camas',once:true,fn:()=>dialog([N('Camas de paja, una detrás de otra, hasta donde alcanza la vista. Casi todas vacías. En las que no, nadie se mueve.'),
         N('Tus ratas se acercan a una cama donde todavía hay un delantal de enfermera, doblado. Chillan bajito.',{sfx:()=>squeaks(5)}),
         L('Las ratas (una mujer)','No tosáis. Por lo que más queráis, no tosáis.'),
         L('Las ratas (un niño)','¿Por qué?'),
         L('Las ratas (la mujer)','Porque el Priore lo oye todo. Y a los que tosen se los llevan a la isla de enfrente.'),
         N('Greta se agarra al brazo de Tano. Ha sentido algo en el suelo: pasos, muy lejos, muy lentos.')])},
-      {id:'silbato',x:450,label:'Silbato',once:true,fn:()=>dialog([N('Colgado de un clavo, encima de una cama vacía, hay un silbato de madera. Muy gastado. Alguien lo ha tocado durante siglos.'),
+      {id:'silbato',x:510,y:262,label:'Silbato',once:true,fn:()=>dialog([N('Colgado de un clavo, encima de una cama vacía, hay un silbato de madera. Muy gastado. Alguien lo ha tocado durante siglos.'),
         N('Conoces esa madera. Conoces esos cortes. Los hiciste tú, con un cuchillo, a la luz de un farol.'),
         L('El Flautista','«Si te pierdes, silba, y te encontraré».'),
         L('Tano','¿A quién se lo dijiste?'),
@@ -2797,23 +2830,23 @@ async function c8s1(){ // Las obras de la Salute
         for(let y=160;y<472;y+=28){ctx.beginPath();ctx.moveTo(845,y);ctx.lineTo(885,y);ctx.stroke();}}
       tf(t,dt);ef(t,dt);pf(t,dt);},
     spots:[
-      {id:'pilotes',x:230,label:'Los pilotes',once:true,fn:()=>dialog([N('Cientos de troncos clavados en el barro, uno al lado de otro, como dientes. Encima pondrán la iglesia.'),
+      {id:'pilotes',x:245,y:395,label:'Los pilotes',once:true,fn:()=>dialog([N('Cientos de troncos clavados en el barro, uno al lado de otro, como dientes. Encima pondrán la iglesia.'),
         L('Ester','Venecia entera está construida así: sobre bosques enteros hundidos en la laguna. Para esta iglesia dicen que harán falta muchísimos.'),
         L('Tano','¿Y aguantan?'),L('Ester','Bajo el agua y sin aire, la madera casi no se pudre. Llevan siglos aguantando.'),
         L('El Flautista','Como las deudas.')])},
-      ...(d1?[{id:'dottore',x:400,label:'Il Dottore',once:true,fn:()=>dialog(d1==='verdad'?[
+      ...(d1?[{id:'dottore',x:400,y:305,label:'Il Dottore',once:true,fn:()=>dialog(d1==='verdad'?[
           N('Il Dottore del Ponte vigila la escalera con su bastón. Te reconoce. Se aparta un paso.'),
           L('Il Dottore','Os partí la flauta porque me lo mandaron. Esta noche nadie me manda nada.'),
           L('Il Dottore','Si subís, subid deprisa. Los guardias de arriba no son médicos: son de Morosin.')]:[
           N('Il Dottore del Ponte está junto a la escalera, con la máscara rota y una mancha negra en la mano.'),
           N('Cuando te ve, aparta la cara. No dice nada. No te detiene.')])}]:[]),
-      {id:'bettina',x:640,label:'Nonna Bettina',once:true,fn:()=>dialog([N('Entre la multitud, una anciana con un chal tararea muy bajito. Es Nonna Bettina.'),
+      {id:'bettina',x:640,y:400,label:'Nonna Bettina',once:true,fn:()=>dialog([N('Entre la multitud, una anciana con un chal tararea muy bajito. Es Nonna Bettina.'),
         L('Nonna Bettina','¡Tano! Abrígate, que el canal sopla frío.'),
         N('Sigue tarareando. Es la canción de cuna. A su alrededor, otras mujeres la tararean también, sin darse cuenta.'),
         L('Tano','Nonna, ¿quién te enseñó esa canción?'),
         L('Nonna Bettina','Mi madre. Y a ella se la enseñó un niño con muleta que tocaba en los puentes. Media Venecia se la sabe y nadie sabe de dónde salió.'),
         N('Tano no dice nada. Aprieta la figurita de madera dentro del bolsillo.')])},
-      {id:'andamio',x:860,label:'El andamio',once:true,fn:async()=>{
+      {id:'andamio',x:765,y:235,wx:865,label:'El andamio',once:true,fn:async()=>{
         await dialog([N('El andamio sube y sube hasta perderse entre las antorchas. Las escaleras de abajo las han quitado.'),
           L('Tano','Yo con la muleta no llego ni al segundo piso.'),
           N(`<b>${SPELLS.escala.name}</b> ${pills(SPELLS.escala.notes)}: de la nota más grave a SOL, peldaño a peldaño. Las ratas suben con cada nota.`)]);
