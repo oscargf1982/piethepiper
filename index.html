@@ -2666,7 +2666,7 @@ const lorenz8=()=>c8b('c7');           // 'verdad' = perdonado (aliado) · 'cast
 const greta8=()=>c8b('c6')==='verdad';
 // Lorenz (Il Priore): usa el recorte del capítulo 7 si existe; si no, una silueta con máscara de pico
 function drawLorenz8(x,y,{s=1,flip=false,alpha=1,unmasked=false}={}){
-  for(const k of ['priore_frente','priore_lado','priore']){if(ready(SPR[k])){sprite(k,x,y,{s:.95*s,flip,alpha});return;}}
+  for(const k of ['priore_frente','priore_lado','priore']){if(ready(SPR[k])){sprite(k,x,y,{s:.7*s,flip,alpha});return;}}
   ctx.save();ctx.translate(x,y);ctx.scale((flip?-1:1)*s*.78,s*.78);ctx.globalAlpha=alpha;ctx.fillStyle='#16130f';
   ctx.beginPath();ctx.moveTo(-36,0);ctx.lineTo(36,0);ctx.lineTo(18,-200);ctx.lineTo(-18,-200);ctx.closePath();ctx.fill();
   ctx.beginPath();ctx.arc(0,-214,20,0,7);ctx.fill();ctx.fillRect(-46,-238,92,8);ctx.fillRect(-24,-270,48,34);
