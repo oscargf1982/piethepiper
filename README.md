@@ -8,7 +8,8 @@ Juego de aventura oscura que reinterpreta el Flautista de Hamelin en la Venecia 
 
 | Carpeta | Contenido |
 | --- | --- |
-| `index.html` | Prototipo jugable del combate en el puente contra Il Dottore (un solo archivo, con todo incrustado) |
+| `index.html` | Menú inicial y **prólogo jugable** (9 escenas: la laguna, el pacto con Morosin, el tutorial de notas en los graneros, el éxodo de las ratas, la acusación y el despertar en Sant'Ariano). Guarda la partida en el navegador. |
+| `combate.html` | Prototipo jugable del combate en el puente contra Il Dottore (se llega desde el final del prólogo) |
 | `escenarios/` | Fondo del puente, referencias y prompts |
 | `personajes/` | Hojas de personaje (Flautista, Il Dottore, Tano, Ester, Morosin, Pulce, guardias y médicos) e índice |
 | `sprites/` | Recortes con fondo transparente: ratas (14 poses + atlas) y personajes del combate |
@@ -17,7 +18,12 @@ Juego de aventura oscura que reinterpreta el Flautista de Hamelin en la Venecia 
 | `menu/` | Fondo e imagen del menú inicial |
 | `capturas/` | Capturas del prototipo en ordenador y móvil |
 
-## Controles
+## Controles del prólogo
+
+- Flauta (micrófono): SI, LA y SOL. Teclado: D S A. Caminar con ◀ ▶ o las flechas, mirar con E, pasar diálogos con Espacio.
+- Opciones del menú: modo sin ritmo, música, e ir directamente a cualquier escena (útil en clase).
+
+## Controles del combate
 
 - Flauta (micrófono): SOL, LA, SI y DO agudo. Toca la melodía de un hechizo para lanzarlo, o pulsa su tarjeta para oírla antes.
 - Teclado: A S D F para las notas, 1–4 para elegir hechizo, Espacio para pausar.
