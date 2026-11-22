@@ -838,14 +838,30 @@ function parReady(){return ['p1','p2','p3','p4','p5'].every(k=>ready(PAR[k]));}
 function parCam(t,C){const a=C.anim,at=a?gt-a.t0:0;let x=Math.sin(t*.35)*9;
   if(a&&a.type==='attack')x-=Math.sin(Math.PI*Math.min(1,at/a.dur))*14;else if(a&&a.type==='enemy')x+=Math.sin(Math.PI*Math.min(1,at/a.dur))*10;
   let y=0;if(C.tilt0!=null){const k=Math.min(1,Math.max(0,(gt-C.tilt0)/4));y=150*(1-(k*k*(3-2*k)));}
-  if(C.phurt>0)y+=Math.sin(gt*55)*C.phurt*3;C.camX=x;C.camY=y;}
-function torchGlow(t,x,y,r,a){const fl=.75+.25*Math.sin(t*11+x)*Math.sin(t*5.3+y);const rg=ctx.createRadialGradient(x,y,1,x,y,r);rg.addColorStop(0,`rgba(255,140,60,${a*fl})`);rg.addColorStop(1,'rgba(255,140,60,0)');ctx.fillStyle=rg;ctx.fillRect(x-r,y-r,r*2,r*2);}
-function parBack(t,C){const X=C.camX,Y=C.camY;
-  PAR_L.forEach(([k,y0,fy,fx],i)=>{ctx.drawImage(PAR[k],-27+X*fx,y0+Y*fy);
+  C.camX=x;C.camY=y;
+  // temblor SOLO del suelo cuando un golpe acierta (al jugador o al enemigo)
+  const q=Math.max(C.phurt||0,C.ehurt||0);C.quakeX=q>0?Math.sin(gt*71)*q*5:0;C.quakeY=q>0?Math.sin(gt*53+1)*q*4:0;}
+// llama que parpadea de forma irregular
+function flick(t,s){return .72+.16*Math.sin(t*9.7+s)+.08*Math.sin(t*23.3+s*2.1)+.06*Math.sin(t*41+s*3.7);}
+function torchGlow(t,x,y,r,a,s=0){const fl=flick(t,x*.37+s),rr=r*(.92+.12*fl);ctx.save();ctx.globalCompositeOperation='lighter';
+  const rg=ctx.createRadialGradient(x,y,1,x,y,rr);rg.addColorStop(0,`rgba(255,150,60,${a*fl})`);rg.addColorStop(.35,`rgba(230,100,40,${a*fl*.45})`);rg.addColorStop(1,'rgba(200,70,30,0)');
+  ctx.fillStyle=rg;ctx.fillRect(x-rr,y-rr,rr*2,rr*2);ctx.restore();}
+// nubes que se desplazan despacio delante del cielo
+const PAR_CL=Array.from({length:7},(_,i)=>({x:i*170-60,y:30+((i*53)%140),r:90+((i*37)%70),v:4+((i*13)%5)}));
+function parClouds(dt,X){PAR_CL.forEach(c=>{c.x+=c.v*dt;if(c.x-c.r*1.6>990)c.x=-c.r*1.6;const x=c.x+X*.8;
+  ctx.save();ctx.translate(x,c.y);ctx.scale(1.6,.55);const g=ctx.createRadialGradient(0,0,0,0,0,c.r);g.addColorStop(0,'rgba(18,26,18,.32)');g.addColorStop(.6,'rgba(22,30,20,.16)');g.addColorStop(1,'rgba(22,30,20,0)');
+  ctx.fillStyle=g;ctx.fillRect(-c.r,-c.r,c.r*2,c.r*2);ctx.restore();});}
+let parLastT=null;
+function parBack(t,C){const X=C.camX,Y=C.camY,dt=parLastT==null?0:Math.min(.1,Math.max(0,t-parLastT));parLastT=t;
+  PAR_L.forEach(([k,y0,fy,fx],i)=>{
+    if(k==='p1'){ctx.drawImage(PAR.p1,-27+X*fx+Math.sin(t*.05)*6,y0+Y*fy);parClouds(dt,X);return;}
+    if(k==='p4'){ctx.drawImage(PAR.p4,-27+X*fx+(C.quakeX||0),y0+Y*fy+(C.quakeY||0));return;}
+    ctx.drawImage(PAR[k],-27+X*fx,y0+Y*fy);
     if(k==='p2')drawFog(0,.35,-170+Y*fy);
-    if(k==='p3'){const ox=-27+X*fx,oy=y0+Y*fy;torchGlow(t,ox+30,oy+305,70,.35);torchGlow(t,ox+990,oy+338,70,.35);
-      ctx.fillStyle='rgba(10,14,10,.18)';ctx.fillRect(0,0,960,540);}});}
-function parFront(t,C){const X=C.camX,Y=C.camY,ox=-27-X*.9,oy=-100+Y*1.15;ctx.drawImage(PAR.p5,ox,oy);torchGlow(t,ox+63,oy+337,95,.4);torchGlow(t,ox+920,oy+356,95,.4);}
+    if(k==='p3'){const ox=-27+X*fx,oy=y0+Y*fy;ctx.fillStyle='rgba(10,14,10,.18)';ctx.fillRect(0,0,960,540);
+      torchGlow(t,ox+30,oy+305,75,.2,1);torchGlow(t,ox+990,oy+338,75,.2,2);}});}
+function parFront(t,C){const X=C.camX,Y=C.camY,ox=-27-X*.9,oy=-100+Y*1.15;ctx.drawImage(PAR.p5,ox,oy);
+  torchGlow(t,ox+63,oy+337,170,.5,3);torchGlow(t,ox+920,oy+356,170,.5,4);torchGlow(t,ox+63,oy+337,45,.55,5);torchGlow(t,ox+920,oy+356,45,.55,6);}
 function drawCombat(t,dt){const C=S.cb,PZ=parReady();
   if(PZ){parCam(t,C);parBack(t,C);ctx.save();ctx.translate(0,C.camY);}
   drawCombatIn(t,dt,PZ);
