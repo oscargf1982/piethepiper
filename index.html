@@ -173,7 +173,7 @@ body.ingame #bMute{display:none}
   </div>
   <div class="mpanel hidden" id="pMode"><div class="box">
     <h2>¿Cómo vas a tocar?</h2>
-    <p class="small">Camina con ◀ ▶ o las flechas, mira las cosas con E y pasa los diálogos con Espacio o tocando el cuadro de texto. Las ratas obedecen a tres notas: <span class="pill" style="background:var(--si)">SI</span><span class="pill" style="background:var(--la)">LA</span><span class="pill" style="background:var(--sol)">SOL</span> (teclado: D S A).</p>
+    <p class="small">Camina con ◀ ▶ o las flechas, mira las cosas con E y pasa los diálogos con Espacio o tocando el cuadro de texto. Las ratas obedecen a tres notas: <span class="pill" style="background:var(--si)">SI</span><span class="pill" style="background:var(--la)">LA</span><span class="pill" style="background:var(--sol)">SOL</span> (teclado: L K J).</p>
     <button class="btn" id="bMic">🎵 Con la flauta (micrófono)</button>
     <button class="btn alt" id="bKey">Sin flauta (teclado o botones)</button>
     <label class="small"><input type="checkbox" id="freeT"> Modo sin ritmo (solo cuenta el orden de las notas)</label>
@@ -838,7 +838,7 @@ document.addEventListener('keydown',e=>{
   if(D&&D.pick&&'12'.includes(k)){D.pick(+k-1);return;}
   if(k==='1'&&S.mode==='combat'){$('spCard').click();return;}
   if(S.mode==='combat1'&&'123'.includes(k)&&!D){const b=$('spells1').children[+k-1];if(b&&!b.disabled)b.click();return;}
-  for(const n of NOTE_ORDER)if(NOTES[n].key===k){pressKey(n);return;}
+  for(const n of NOTE_ORDER)if((NOTES[n].code&&NOTES[n].code===e.code)||NOTES[n].key===k){e.preventDefault();pressKey(n);return;}
 });
 document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='arrowleft')keys.left=false;if(k==='arrowright')keys.right=false;});
 [['bLeft','left'],['bRight','right']].forEach(([id,dir])=>{const b=$(id);
@@ -1457,7 +1457,7 @@ async function c2s4(){ // La puerta del Ghetto: combate
         N('Las llaves caen al suelo con estrépito. Entre ellas rueda un trozo de madera oscura, tallada, con dos agujeros.',{sfx:()=>{C.frag=gt;}})]);
       await wait(1.2);C.frag=null;
       await learnNote('RE2',[N('El trozo encaja en tu flauta con un chasquido. Ahora tiene un agujero más.'),
-        N(`Nota nueva: ${pill('RE2')}, el RE agudo. Tápalo con ${NOTES.RE2.finger}. Tecla G.`)]);
+        N(`Nota nueva: ${pill('RE2')}, el RE agudo. Tápalo con ${NOTES.RE2.finger}. Tecla ${NOTES.RE2.key.toUpperCase()}.`)]);
       C.silence=gt;
       await dialog([N('Arriba, Matteo baja el pífano.'),L('Matteo','Esa nota… mi hija la cantaba.'),L('Bastian','¡Matteo! ¡Toca!'),
         N(`Ahora puedes usar <b>Eco</b> (${pills(SPELLS.eco.notes)}): las ratas repiten tu último hechizo.`)]);},
@@ -2353,6 +2353,10 @@ C6_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.cre
   const pc=[...ps].find(x=>/Continuará/.test(x.textContent));if(pc)pc.textContent='Continuará en el capítulo 7: El Lazzaretto.';
   new MutationObserver(()=>{if(e.classList.contains('hidden')||!stats.c6||!stats.c6.book||$('endBook').dataset.c6)return;$('endBook').dataset.c6=1;
     $('endBook').textContent+=($('endBook').textContent?' · ':'Libro de las Deudas · ')+'La Tarantella: '+(stats.c6.book==='castigo'?'castigada.':'dijo la verdad.');}).observe(e,{attributes:true,attributeFilter:['class']});}
+// Teclado (modo sin flauta), como un piano en la fila central: A S D F = DO RE MI FA · J K L Ñ = SOL LA SI DO'. RE' agudo en la tecla de al lado de la Ñ.
+// Se usa e.code para que funcione igual en teclados españoles y de otros idiomas (Ñ = ; en teclado inglés).
+const KEYMAP={DO1:['a','KeyA'],RE:['s','KeyS'],MI:['d','KeyD'],FA:['f','KeyF'],SOL:['j','KeyJ'],LA:['k','KeyK'],SI:['l','KeyL'],DO:['ñ','Semicolon'],RE2:['´','Quote']};
+for(const [n,[key,code]] of Object.entries(KEYMAP))if(NOTES[n]){NOTES[n].key=key;NOTES[n].code=code;const b=$('pad_'+n),sm=b&&b.querySelector('small');if(sm)sm.textContent='tecla '+key.toUpperCase();}
 const MI=[...document.querySelectorAll('.mi')];let msel=1;
 function selMenu(i){MI.forEach((b,k)=>b.classList.toggle('sel',k===i));msel=i;}
 MI.forEach((b,i)=>b.addEventListener('pointerenter',()=>selMenu(i)));
