@@ -197,6 +197,13 @@ body.ingame #bMute{display:none}
         <option value="15">Capítulo 1 · Il Dottore del Ponte (combate, nota DO')</option>
         <option value="16">Capítulo 1 · La deuda del médico</option>
         <option value="17">Capítulo 1 · El camino de vuelta</option>
+        <option value="18">Capítulo 2 · Las puertas cerradas</option>
+        <option value="19">Capítulo 2 · La puerta del Ghetto (sigilo)</option>
+        <option value="20">Capítulo 2 · Ester</option>
+        <option value="21">Capítulo 2 · El cuaderno cifrado</option>
+        <option value="22">Capítulo 2 · Los Guardianes de las Puertas (combate, nota RE')</option>
+        <option value="23">Capítulo 2 · La deuda de los Guardianes</option>
+        <option value="24">Capítulo 2 · Ester se une</option>
       </select></p>
     <button class="btn" id="bGoScene">Jugar desde esa escena</button>
     <button class="btn alt mBack">Volver</button>
@@ -1261,6 +1268,175 @@ async function c1s8(){ // El camino de vuelta
   await fade(1,1.5);musicPlay('game');
 }
 
+// =================== CAPÍTULO 2 · LAS PUERTAS CERRADAS ===================
+stats.c2=stats.c2||{};
+const c2img=(k,fb)=>has(k)?k:fb;   // imagen del capítulo 2 o provisional
+function nightTint(a=.45){return ()=>{ctx.fillStyle=`rgba(8,14,30,${a})`;ctx.fillRect(0,0,960,540);};}
+function lanternGlow(x,y,t,r=70){const fl=.75+.25*Math.sin(t*11)*Math.sin(t*4.7),g=ctx.createRadialGradient(x,y,2,x,y,r);g.addColorStop(0,`rgba(255,190,90,${.42*fl})`);g.addColorStop(1,'rgba(255,190,90,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);}
+function drawEster(x,y,t,{side=false,flip=false,s=.7,alpha=1}={}){shadowAt(x,y,26);sprite(side?'ester_lado':'ester_frente',x,y,{s,flip,alpha});lanternGlow(x+(side?(flip?-22:22):40)*s/.7,y-62*s/.7,t,60);}
+
+async function c2s0(){ // Las puertas cerradas
+  S.mode='black';S.fade=1;S.title={t0:gt,main:'CAPÍTULO II',sub:'Las puertas cerradas'};await fade(0,1.2);bell();await wait(4.2);await fade(1,1);S.title=null;
+  still('fondamenta',{z0:1.1,z1:1.0,dur:22});S.fx=nightTint(.55);await fade(0,1.5);
+  await dialog([N('Venecia ha cerrado sus puertas. Las barcas de la Sanità vigilan los canales y nadie cruza de un barrio a otro sin permiso.'),
+    N('En la carta del médico había un nombre: San Clemente. En una taberna medio vacía de Cannaregio, un barquero borracho habla demasiado.'),
+    L('El barquero','¿San Clemente? Allí empezó todo, amigo. Pero eso no lo dice nadie.'),
+    L('El barquero','Solo un médico apuntó los primeros muertos: el maestro Abramo, del Ghetto. Y desde que cerraron el Ghetto nadie lo ha vuelto a ver.'),
+    L('El Flautista','¿Quién lo cerró?'),L('El barquero','Los Guardianes de las Puertas. Dos hermanos. Obedecen al Provveditore Morosin.'),
+    N('Pulce asoma la cabeza por tu manga. Tiene los bigotes de punta.')]);
+  await fade(1,1.2);S.fx=null;
+}
+async function c2s1(){ // Fondamenta degli Ormesini: pasar sin que te vea el guardia
+  setMoveUI(true);S.fade=1;const R=has('c2_puerta'),FY=428,GX=650;const pf=pulceFollow();
+  const g={gone:null,caught:0},cyc=7;let rats=null;
+  const look=()=>{if(g.gone!=null)return 'away';const q=gt%cyc;return q<3.8?'away':q<4.6?'turn':'watch';};
+  const p=walkScene({img:R?'c2_puerta':'c1_fondamenta',y:FY,s:.62,start:150,maxX:745,exitX:745,need:['reja'],blocked:'El guardia está delante de la puerta. Así no puedes pasar.',
+    hint:'La puerta del Ghetto. Avanza cuando el guardia mire a otro lado. Si su farol te apunta, quédate quieto.',
+    extra:(t,dt)=>{if(!R)nightTint(.35)();pf(t,dt);const W=S.walk,L=look();
+      let gx=GX;if(g.gone!=null)gx=GX+(gt-g.gone)*80;
+      if(gx<1000){const faceL=L==='watch';shadowAt(gx,FY,30);gspr('guardia-frente',gx,FY,{s:.66,flip:!faceL});
+        const lx=gx+(faceL?-30:30),ly=FY-95;lanternGlow(lx,ly,t,50);
+        if(faceL){ctx.save();const cg=ctx.createLinearGradient(lx,0,lx-380,0);cg.addColorStop(0,'rgba(255,200,110,.32)');cg.addColorStop(1,'rgba(255,200,110,0)');ctx.fillStyle=cg;
+          ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx-380,FY-190);ctx.lineTo(lx-380,FY+10);ctx.closePath();ctx.fill();ctx.restore();}
+        if(L==='turn'){ctx.save();ctx.fillStyle='#e0b04a';ctx.font='bold 34px Georgia';ctx.textAlign='center';ctx.fillText('!',gx,FY-215+Math.sin(t*20)*2);ctx.restore();}
+        if(faceL&&W&&!W.busy&&!D&&W.moving&&W.x>gx-390&&W.x<gx&&gt-g.caught>2){g.caught=gt;thud();W.x=150;keys.left=keys.right=false;
+          say('<b>«¡Alto! ¿Quién anda ahí?»</b> Te escondes a tiempo en un portal y vuelves atrás. Espera a que el guardia mire hacia el otro lado.');}}
+      if(rats!=null){const q=gt-rats;for(let i=0;i<8;i++){const x=470+q*220+i*20;if(x<760)spr(runF(t,i),x,FY-4+(i%3)*5,.62,false);}}},
+    spots:[
+      {id:'bando',x:120,label:'Bando',once:true,fn:()=>dialog([L('Bando de la Sanità','«El Ghetto permanece cerrado de día y de noche. Sus habitantes son sospechosos de traer el contagio. Quien les dé comida o agua será castigado.»'),
+        L('El Flautista','Sospechosos. Siempre hay alguien a quien echarle la culpa.')])},
+      {id:'reja',x:470,label:'Rejilla del desagüe',once:true,fn:async()=>{
+        await dialog([N('Pulce se mete entre tus botas y araña una rejilla baja en el muro. Por debajo corre un desagüe que pasa al otro lado de la puerta.'),
+          N(`Manda a las ratas por el desagüe con ${pill('SOL')} («seguidme») y llámalas desde dentro con ${pill('SI')} («venid»). Harán ruido al otro lado.`)]);
+        await waitNotes(['SOL','SI'],'Toca SOL y luego SI',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SOL')}.`)});say('');
+        rats=gt;squeaks(12);await wait(1.4);squeaks(8);
+        await dialog([L('El guardia','¿Qué es eso? ¡Ratas dentro del Ghetto! ¡Lo que faltaba!'),N('El guardia abre el postigo de la puerta y entra a mirar con el farol en alto.',{sfx:()=>{g.gone=gt;}}),
+          N('El postigo se queda entornado.')]);
+        say('El postigo está abierto. Entra en el Ghetto.');}}
+    ]});
+  await fade(0,1.2);await p;setMoveUI(false);say('');await fade(1,.8);
+}
+async function c2s2(){ // Campo del Ghetto Nuovo: Ester
+  const R=has('c2_campo');still(c2img('c2_campo','castello'),{z0:1.04,z1:1.12,dur:30});
+  let ex=null;S.fx=R?null:(t)=>{nightTint(.3)();if(ex!=null)drawEster(700,480,t,{side:true,flip:true,alpha:Math.min(1,(gt-ex)/1)});};
+  await fade(0,1.2);
+  await dialog([N('Dentro, el Ghetto es una ciudad vertical: casas de siete y ocho pisos, ventanas diminutas, tres pozos con tapas de hierro. Huele a humo y a sopa aguada.'),
+    N('Detrás de cada ventana hay alguien mirando. Nadie habla.')]);
+  ex=gt;
+  await dialog([L('???','Un paso más y te quemo el abrigo.',{sfx:()=>{ex=ex||gt;}}),N('Una muchacha te apunta con un farol encendido. En la otra mano aprieta un cuaderno de cuero.'),
+    L('???','¿Te manda Morosin? ¿Vienes a llevarte a otro?'),L('El Flautista','No me manda nadie.'),L('???','Eso dicen todos.')]);
+  await dialog([N('Las ratas que entraron por el desagüe salen de entre los pozos y se sientan a tus pies, quietas como perros.',{sfx:()=>squeaks(6)}),
+    N('La muchacha baja el farol, muy despacio.'),L('???','Tú eres el de las ratas. El que buscan en todos los bandos.'),
+    L('Ester','Me llamo Ester. Era aprendiz del maestro Abramo. Se lo llevaron los Guardianes hace una semana, por apuntar los nombres de los muertos.'),
+    L('Ester','Me dejó esto. Está todo escrito en su clave. Yo sé leer lo que pone, pero no lo que suena.')]);
+  await fade(1,1);S.fx=null;
+}
+async function c2s3(){ // El cuaderno cifrado + la promesa
+  unlockDO();const R=has('c2_cuaderno');S.mode='stillstaff';S.img=c2img('c2_cuaderno','libro');S.kb=null;
+  const MEL=['SOL','LA','SI','DO','SI'];let got=-1;
+  S.fx=(t)=>{if(!R){ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(0,0,960,540);}
+    const x0=540,y0=150,w=230;ctx.save();ctx.strokeStyle='rgba(50,30,15,.75)';ctx.lineWidth=1.3;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x0,y0+i*10);ctx.lineTo(x0+w,y0+i*10);ctx.stroke();}
+    MEL.forEach((n,i)=>{const x=x0+30+i*42,y=y0+40-NOTES[n].step*5;ctx.fillStyle=i<=got?NOTES[n].color:'#2a160c';ctx.beginPath();ctx.ellipse(x,y,6,4.5,-.35,0,7);ctx.fill();
+      ctx.strokeStyle='#2a160c';ctx.beginPath();ctx.moveTo(x+5.5,y);ctx.lineTo(x+5.5,y-22);ctx.stroke();});ctx.restore();};
+  await fade(0,1);
+  await dialog([N('Ester abre el cuaderno junto a una vela. Notas de médico, dibujos de bubones, un mapa pequeño de una isla.'),
+    N('En la última página hay un pentagrama con cinco notas y nada más.'),L('Ester','El maestro decía que lo importante lo escribía «para que solo lo entienda quien sepa escuchar».'),
+    N(`Lee el pentagrama y tócalo: ${pills(MEL)}.`)]);
+  let pw=0;for(let r=0;r<3&&pw<.6;r++){say(`El cuaderno (${r+1}/3): `+pills(MEL));wantNotes(MEL);const p=await perform(MEL);wantNotes([]);pw=scorePerf(p);
+    if(pw<.6)say('Ester niega con la cabeza: algo no suena bien. Otra vez.');await wait(1.2);}
+  got=4;say('');
+  await dialog([N('Al sonar la última nota, Ester pasa el dedo por las letras de debajo, que hasta ahora no tenían sentido. Ahora sí.'),
+    L('Ester','(Leyendo) «Primeros casos: San Clemente. Nave de Mantua, julio. La Sanità lo sabe. Me han ordenado callar.»'),
+    L('Ester','Lo sabían. Desde julio. Y nos encerraron a nosotros para que nadie mirase hacia allí.'),
+    L('Ester','Los Guardianes tienen la llave de la puerta grande. Y el maestro decía que el mayor lleva un trozo de madera tallada colgado del llavero. Como tu flauta.')]);
+  S.mode='still';
+  const c=await choice('Ester','¿Vas a abrir esa puerta o solo has venido a por tu flauta?',['Te prometo que abriré las puertas','Solo busco mi flauta']);stats.c2.promise=c===0;
+  if(c===0)await dialog([L('Ester','En esta ciudad las promesas valen menos que el pan.'),L('Ester','Pero me la apunto.'),N('Sientes un pinchazo frío en el dorso de la mano, donde está la mancha. Como si alguien hubiera tomado nota.')]);
+  else await dialog([L('Ester','Al menos eres sincero.'),L('Ester','Iré contigo de todas formas. Alguien tiene que preguntarles por el maestro.')]);
+  await fade(1,1);S.fx=null;
+}
+// ---- Combate: los Guardianes de las Puertas ----
+const WALK2={x0:740,x1:930,y:200};
+function guardBg(t,dt){const R=has('c2_puerta');drawCover(IMG[R?'c2_puerta':'c1_fondamenta'],{oy:-90});if(!R)nightTint(.4)();
+  if(!R){ctx.fillStyle='#2a1c12';ctx.fillRect(WALK2.x0,WALK2.y,WALK2.x1-WALK2.x0,10);ctx.fillStyle='#1a110b';for(let x=WALK2.x0;x<=WALK2.x1;x+=38)ctx.fillRect(x,WALK2.y-34,5,34);ctx.fillRect(WALK2.x0,WALK2.y-36,WALK2.x1-WALK2.x0,5);
+    ctx.fillRect(WALK2.x0+10,WALK2.y+10,6,338-WALK2.y-10);ctx.fillRect(WALK2.x0+34,WALK2.y+10,6,338-WALK2.y-10);for(let y=WALK2.y+30;y<338;y+=26)ctx.fillRect(WALK2.x0+10,y,30,4);}
+  lanternGlow(905,150,t,60);}
+function drawGuardians(x,y,o){const C=o.C,id=o.id;
+  // Bastian, el soldado, en la puerta
+  const bAtk=o.atk&&(id==='alabarda'||id==='cerrojo');const kneelF=o.kneel?'brightness(.55)':'';
+  if(o.kneel){ctx.save();ctx.translate(x,y);ctx.scale(1,.8);ctx.translate(-x,-y);gspr(bAtk?'guardia-ataque':'guardia-frente',x,y,{s:.7,flip:false,alpha:o.alpha,flash:o.flash});ctx.restore();}
+  else gspr(bAtk?'guardia-ataque':'guardia-frente',x,y,{s:.7,flip:false,alpha:o.alpha,flash:id==='alabarda'||id==='cerrojo'||!id?o.flash:0});
+  if(!C.frag&&C.phase===1){ctx.fillStyle='#b8a070';ctx.beginPath();ctx.arc(x-12,y-78,6,0,7);ctx.strokeStyle='#b8a070';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#6b4423';ctx.fillRect(x-14,y-72,5,14);}
+  // Matteo, el músico, en la pasarela de arriba
+  const mx=850,my=WALK2.y,mAtk=o.atk&&(id==='redoble'||id==='cierre');
+  ctx.save();if(kneelF)ctx.filter=kneelF;shadowAt(mx,my,22);
+  if(SPR.matteo)sprite('matteo',mx,my,{s:.5,flip:true,alpha:o.alpha});else{ctx.globalAlpha=o.alpha;gspr('guardia-frente',mx,my,{s:.5,flip:true,alpha:o.alpha,flash:mAtk?o.flash:0});}
+  ctx.restore();
+  if(mAtk||(C.matteoPlay&&gt-C.matteoPlay<3)){for(let i=0;i<3;i++){const k=((o.t*.8+i/3)%1);ctx.globalAlpha=(1-k)*o.alpha;ctx.fillStyle=id==='cierre'?'#9fd8c8':'#e0b04a';ctx.font='20px Georgia';ctx.fillText('♪',mx-30-k*60+Math.sin(k*6+i)*6,my-110-k*40);}ctx.globalAlpha=1;}
+  if(C.silence&&gt-C.silence<3.5){ctx.save();ctx.fillStyle='#efe3c8';ctx.font='italic 16px Georgia';ctx.textAlign='center';ctx.globalAlpha=Math.min(1,(3.5-(gt-C.silence)));ctx.fillText('(Matteo deja de tocar)',mx,my-150);ctx.restore();}
+}
+async function c2s4(){ // La puerta del Ghetto: combate
+  ensureNotes(['DO']);musicPlay('game');S.fade=1;
+  await bossFight({name:'Los Guardianes de las Puertas',short:'Los Guardianes',hp:70,shiftAt:35,
+    sp1:['enjambre','muralla','ojos'],sp2:['enjambre','muralla','ojos','eco'],
+    atk1:[{id:'alabarda',name:'Golpe de alabarda',notes:['LA','SOL','LA'],dmg:8},{id:'redoble',name:'Redoble',notes:['SOL','SOL','SI'],dmg:9,fx:'song'}],
+    atk2:[{id:'cerrojo',name:'Cerrojo',notes:['DO','LA','SOL'],dmg:10},{id:'cierre',name:'Canción de cierre',notes:['RE2','DO','SI'],dmg:11,confuse:true,fx:'song'}],
+    bg:guardBg,floor:338,ex:640,lunge:60,shadow:36,drawFoe:drawGuardians,
+    weakText:'Las exploradoras ven que Bastian cojea de la pierna izquierda.',
+    enjText:C=>C.phase===1?'Las ratas trepan por la alabarda de Bastian':'Las ratas suben por la escalera y muerden a los dos',
+    intro:[N('Ester te lleva por detrás de los pozos hasta la puerta grande. Allí están los dos.'),
+      L('Bastian','Vaya. El brujo de las ratas, dentro del Ghetto. Morosin nos va a dar una medalla.'),
+      N('Arriba, en la pasarela, su hermano Matteo se lleva un pífano a los labios. Lleva una cinta de niña atada a la muñeca.'),
+      L('Ester','¡¿Dónde está el maestro Abramo?!'),L('Bastian','Donde están los que hablan demasiado.'),
+      N('Los dos hermanos atacan por turnos: escucha quién toca antes de repetir la melodía.')],
+    onShift:async C=>{await dialog([N('Las ratas se cuelgan del cinturón de Bastian y roen la correa del llavero.',{sfx:()=>squeaks(10)}),
+        N('Las llaves caen al suelo con estrépito. Entre ellas rueda un trozo de madera oscura, tallada, con dos agujeros.',{sfx:()=>{C.frag=gt;}})]);
+      await wait(1.2);C.frag=null;
+      await learnNote('RE2',[N('El trozo encaja en tu flauta con un chasquido. Ahora tiene un agujero más.'),
+        N(`Nota nueva: ${pill('RE2')}, el RE agudo. Tápalo con ${NOTES.RE2.finger}. Tecla G.`)]);
+      C.silence=gt;
+      await dialog([N('Arriba, Matteo baja el pífano.'),L('Matteo','Esa nota… mi hija la cantaba.'),L('Bastian','¡Matteo! ¡Toca!'),
+        N(`Ahora puedes usar <b>Eco</b> (${pills(SPELLS.eco.notes)}): las ratas repiten tu último hechizo.`)]);},
+    finale:async C=>{await dialog([N('La alabarda de Bastian cae al canal. Matteo se sienta en la pasarela con el pífano en el regazo.'),
+      L('Bastian','Haz lo que quieras. Pero no toques a mi hermano.')]);},
+    winText:'Los Guardianes se rinden.',
+    fall:[N('Caes contra la puerta. Ester te agarra del abrigo y tira de ti.'),L('Ester','¡Levántate! ¡No me dejes sola con ellos!')]});
+}
+async function c2s5(){ // La deuda de los Guardianes: recuerdo + Libro
+  await memoryScene(c2img('c2_recuerdo','c1_recuerdo'),'Hamelin, 1284',[N('Túneles bajo una ciudad. Antorchas. Niños tumbados sobre paja, tosiendo, sin nadie que los cuide.'),
+    N('Un concejal con gorro negro y cuello de piel te agarra del brazo y te habla al oído.'),
+    L('El concejal','Ni una palabra, músico. Si los mercaderes se enteran, Hamelin muere.'),N('Tú miras a los niños. Uno de ellos tararea una canción que conoces.')]);
+  still(c2img('c2_puerta','c1_fondamenta'),{z0:1.06,z1:1.0,dur:20});S.fx=has('c2_puerta')?null:nightTint(.45);await fade(0,1);
+  await dialog([L('El Flautista','En Hamelin también hubo una enfermedad. Y también la escondieron.'),L('Ester','¿Qué has dicho?'),L('El Flautista','Nada. Todavía nada.')]);
+  bookPage(['Los Guardianes','Un trozo de flauta.','La llave.']);await wait(1.2);
+  await dialog([N('El Libro de las Deudas se abre solo. Otra página, otra letra tuya que no recuerdas haber escrito.')]);
+  const c=await choice('','¿Cómo cobras esta deuda?',['Castigarlos','Exigir la verdad']);stats.c2.book=c===0?'castigo':'verdad';S.overlay=null;
+  if(c===0){await dialog([N('Tocas una sola nota. Las ratas salen de los desagües, de los pozos, de debajo de las puertas.',{sfx:()=>squeaks(16)}),
+      N('Los dos hermanos echan a correr por la Fondamenta. Bastian, al saltar a una barca, tira el llavero al canal.'),N('La llave grande se hunde en el agua verde. La puerta sigue cerrada.'),
+      N('En el dorso de tu mano aparece otra mancha negra.')]);
+    if(stats.c2.promise)await dialog([N('Y luego otra más. Una promesa rota también es una deuda.'),L('Ester','Me lo prometiste.'),L('Ester','Eres igual que ellos.')]);}
+  else{await dialog([L('El Flautista','Decidles la verdad. A ellos.'),N('Señalas las ventanas. Detrás de cada una hay una cara.'),
+      L('Bastian','…Nos lo mandó Morosin. Cerrar el Ghetto, decir que la peste la trajeron ellos. Así nadie preguntaba por San Clemente.'),
+      L('Matteo','Mi hija murió en septiembre. Nos dijeron que era por los judíos. Y yo me lo creí.'),
+      N('Matteo baja de la pasarela, recoge la llave grande del suelo y la mete en la cerradura.')]);}
+  await fade(1,1);S.fx=null;
+}
+async function c2s6(){ // Ester se une
+  const open=stats.c2.book==='verdad';
+  if(open){still(c2img('c2_abierto','castello'),{z0:1.0,z1:1.1,dur:22});S.fx=has('c2_abierto')?null:()=>{ctx.fillStyle='rgba(255,170,150,.12)';ctx.fillRect(0,0,960,540);};}
+  else{still(c2img('c2_cerrado','c1_fondamenta'),{z0:1.1,z1:1.0,dur:22});S.fx=has('c2_cerrado')?null:nightTint(.5);}
+  await fade(0,1.2);musicPlay('cuna');
+  if(open)await dialog([N('Al amanecer, la puerta grande del Ghetto se abre. Las familias salen despacio a la Fondamenta, a respirar el aire del canal.'),
+      N('Un anciano se agacha y moja la mano en el agua, como si no se lo creyera.'),
+      ...(stats.c2.promise?[L('Ester','Lo has cumplido.'),N('Ester te tiende la mano. Es la primera vez que alguien te la da sin miedo.')]:[L('Ester','Dijiste que solo buscabas tu flauta.'),L('Ester','Mentiroso.'),N('Pero lo dice sonriendo.')])]);
+  else await dialog([N('La puerta sigue cerrada. Entre los barrotes asoman manos que no piden nada.'),
+      L('Ester','Iré contigo. No porque me fíe de ti.'),L('Ester','Iré para ver qué haces la próxima vez.')]);
+  await dialog([L('Ester','En el cuaderno hay algo más. Los muertos de San Clemente no se enterraron en la isla.'),
+    L('Ester','Los llevaron de noche a unas criptas bajo la ciudad. El maestro escribió: «Allí cantan los huesos».'),
+    L('El Flautista','Entonces allí iremos.'),N('Pulce se sube al hombro de Ester. Ella no la aparta.')]);
+  await fade(1,1.5);musicPlay('game');
+}
+
 // =================== INFRAESTRUCTURA COMÚN (notas nuevas y combate genérico) ===================
 // Notas nuevas: RE' agudo (cap. 2), MI grave (cap. 3) y RE grave (cap. 4). RE y RE' se distinguen por la octava (campo midi).
 Object.assign(NOTES,{
@@ -1682,12 +1858,14 @@ async function c4s6(){ // Amanecer en casa de Bettina
 const C34_SCN=[[c3s0,'Cap. 3 · El pozo de San Zaccaria'],[c3s1,'Cap. 3 · La cripta'],[c3s2,'Cap. 3 · La Monaca delle Ossa'],[c3s3,'Cap. 3 · Combate: la Monaca (nota MI)'],[c3s4,'Cap. 3 · La deuda de la Monaca'],[c3s5,'Cap. 3 · La crecida'],
   [c4s0,'Cap. 4 · La Piazzetta'],[c4s1,'Cap. 4 · Las cloacas'],[c4s2,'Cap. 4 · El nido'],[c4s3,'Cap. 4 · Combate: Il Re dei Ratti (nota RE)'],[c4s4,'Cap. 4 · Las ratas de Venecia'],[c4s5,'Cap. 4 · Las jaulas'],[c4s6,'Cap. 4 · Amanecer']];
 
-const SCENES=[scene0,scene1,scene2,scene3,scene4,scene5,scene6,scene7,scene8,c1s0,c1s1,c1s2,c1s3,c1s4,c1s5,c1s6,c1s7,c1s8];
+const SCENES=[scene0,scene1,scene2,scene3,scene4,scene5,scene6,scene7,scene8,c1s0,c1s1,c1s2,c1s3,c1s4,c1s5,c1s6,c1s7,c1s8,c2s0,c2s1,c2s2,c2s3,c2s4,c2s5,c2s6];
 async function story(from=0){
   for(let i=from;i<SCENES.length;i++){putSave(i);musicPlay(i===0||i===7?null:'game');S.scene=i;S.caption=null;S.title=null;S.overlay=null;S.fx=null;await SCENES[i]();}
   const tot=stats.perf+stats.good+stats.miss,acc=tot?Math.round((stats.perf+stats.good)/tot*100):0;
   $('endS').textContent=`Notas acertadas: ${acc} % · Perfectas: ${stats.perf}`+(stats.rats?` · Ratas en el éxodo: ${stats.rats.toLocaleString('es-ES')}`:'');
-  $('endBook').textContent=stats.c1&&stats.c1.book?('Libro de las Deudas · Il Dottore del Ponte: '+(stats.c1.book==='castigo'?'castigado.':'confesó la verdad.')):'';
+  {const bk=[];if(stats.c1&&stats.c1.book)bk.push('Il Dottore del Ponte: '+(stats.c1.book==='castigo'?'castigado.':'confesó la verdad.'));
+   if(stats.c2&&stats.c2.book)bk.push('Los Guardianes: '+(stats.c2.book==='castigo'?'castigados'+(stats.c2.promise?' (promesa rota).':'.'):'confesaron; el Ghetto se abrió.'));
+   $('endBook').textContent=bk.length?'Libro de las Deudas · '+bk.join(' · '):'';}
   $('end').classList.remove('hidden');musicPlay('menu');document.body.classList.remove('ingame');try{localStorage.removeItem('ptp_save');}catch(e){}
 }
 function begin(){$('free').checked=$('freeT').checked;musicPlay('game');document.body.classList.add('ingame');$('title').classList.add('hidden');
@@ -1725,7 +1903,7 @@ let START=0;
 function getSave(){try{return JSON.parse(localStorage.getItem('ptp_save')||'null');}catch(e){return null;}}
 function putSave(i){try{localStorage.setItem('ptp_save',JSON.stringify({scene:i,stats}));}catch(e){}}
 const SCN=['El fondo de la laguna','Llegada a Venecia','El pacto','Los graneros','El éxodo','Las primeras cruces','La acusación','La laguna',"Sant'Ariano",
-  'Cap. 1 · La barca','Cap. 1 · Cannaregio','Cap. 1 · El puente de Tano','Cap. 1 · Nonna Bettina','Cap. 1 · La calle de los muertos','Cap. 1 · La casa de cuarentena','Cap. 1 · Il Dottore del Ponte','Cap. 1 · La deuda del médico','Cap. 1 · El camino de vuelta'];
+  'Cap. 1 · La barca','Cap. 1 · Cannaregio','Cap. 1 · El puente de Tano','Cap. 1 · Nonna Bettina','Cap. 1 · La calle de los muertos','Cap. 1 · La casa de cuarentena','Cap. 1 · Il Dottore del Ponte','Cap. 1 · La deuda del médico','Cap. 1 · El camino de vuelta','Cap. 2 · Las puertas cerradas','Cap. 2 · La puerta del Ghetto','Cap. 2 · Ester','Cap. 2 · El cuaderno cifrado','Cap. 2 · Los Guardianes de las Puertas','Cap. 2 · La deuda de los Guardianes','Cap. 2 · Ester se une'];
 function menuUI(){const sv=getSave(),c=$('mCont');c.classList.toggle('off',!sv);c.setAttribute('aria-disabled',sv?'false':'true');
   c.innerHTML='Continuar'+(sv?`<small>${SCN[sv.scene]}</small>`:'');}
 function panel(id){document.querySelectorAll('.mpanel').forEach(x=>x.classList.toggle('hidden',x.id!==id));}
