@@ -155,6 +155,7 @@ body.ingame #bMute{display:none}
   <audio id="mMenu" src="audio/intro.mp3" loop preload="auto"></audio>
   <audio id="mGame" src="audio/prologo.mp3" loop preload="auto"></audio>
   <audio id="mCuna" src="audio/cancion-de-cuna.mp3" loop preload="auto"></audio>
+  <audio id="mMonaca" src="audio/salmo-monaca.mp3" loop preload="auto"></audio>
   <button id="bMute" title="Música" aria-label="Silenciar la música">🔊</button>
   <div class="overlay" id="title"><div id="mstage">
     <img id="menuBg" alt="El Flautista camina por un muelle de Venecia de noche, con una rata a sus pies">
@@ -1737,7 +1738,7 @@ async function c3shift(C){
     N(`<b>Marea</b> ${pills(SPELLS.marea.notes)}: las nadadoras atacan desde el suelo inundado y te quitan la confusión del salmo.`)]);
 }
 async function c3s3(){ // Combate: la Monaca delle Ossa
-  ensureNotes(['DO','RE2']);S.fade=1;
+  ensureNotes(['DO','RE2']);S.fade=1;musicPlay('monaca');
   await bossFight({name:'La Monaca delle Ossa',short:'La Monaca',hp:100,shiftAt:50,floor:335,ex:705,lunge:18,shadow:44,
     sp1:['enjambre','muralla','ojos','eco'],sp2:['enjambre','muralla','ojos','eco','marea'],
     atk1:[ATK3.salmo,ATK3.candelabro,ATK3.rosario],atk2:[ATK3.coro,ATK3.candelabro,ATK3.salmo,ATK3.rosario],
@@ -1752,6 +1753,7 @@ async function c3s3(){ // Combate: la Monaca delle Ossa
     intro:[N('Su canto confunde a las ratas. Si un salmo te alcanza, tu siguiente hechizo pierde la mitad de fuerza... salvo que lo toques perfecto, más afinado que ella.'),
       N('Escucha sus melodías y repítelas para esquivar, como contra Il Dottore.')],
     onShift:c3shift,winText:'El canto se rompe. La Monaca cae de rodillas entre los huesos.'});
+  musicPlay('game');
 }
 async function c3s4(){ // La deuda de la Monaca y el recuerdo
   ensureNotes(['DO','RE2','MI']);if(has('c3_monaca_fin')){still('c3_monaca_fin',{z0:1.0,z1:1.06,dur:40});S.fx=(t,dt)=>drawFog(dt,.3,-120);}else{still('c3_monaca',{z0:1.1,z1:1.0,y0:.35,y1:.3,dur:40});S.fx=()=>{ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,960,540);};}await fade(0,1.2);
@@ -1951,13 +1953,14 @@ $('bAgain').onclick=()=>{location.reload();};
 $('spMel').innerHTML=pills(ENJ);$('spCard').disabled=true;setMoveUI(false);
 
 // ---------- Música (empieza con el primer toque: los navegadores bloquean el autoplay) ----------
-const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna')};let curM='menu',unlocked=false,muted=false;
+const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca')};let curM='menu',unlocked=false,muted=false;
 Object.values(TR).forEach(a=>a.volume=0);
 try{muted=localStorage.getItem('ptp_mute')==='1';}catch(e){}
 function musicPlay(n){curM=n;}
 function wantVol(n){if(muted||n!==curM)return 0;
   if(n==='game'){const busy=['tut','exodo','combat','combat1','stillstaff'].includes(S.mode)||!!P||CAL.on;if(busy)return useMic?0:.12;return .4;}
-  if(n==='cuna')return useMic&&(P||CAL.on)?0:(P?.15:.55);return .7;}
+  if(n==='cuna')return useMic&&(P||CAL.on)?0:(P?.15:.55);
+  if(n==='monaca')return (P||CAL.on)?(useMic?0:.15):.45;return .7;}
 setInterval(()=>{for(const n in TR){const a=TR[n],w=wantVol(n);if(w>0&&a.paused&&(unlocked||!a._tried)){a._tried=1;a.play().catch(()=>{});}
   const d=w-a.volume;a.volume=Math.max(0,Math.min(1,a.volume+Math.sign(d)*Math.min(Math.abs(d),.035)));if(w===0&&a.volume<.01&&!a.paused)a.pause();}},80);
 function unlock(e){if(!unlocked){unlocked=true;if(!$('pressStart').classList.contains('hidden')){$('pressStart').classList.add('hidden');$('menuNav').classList.remove('hidden');if(e){e.preventDefault&&e.type==='keydown'&&e.preventDefault();e.stopImmediatePropagation();}}}}
