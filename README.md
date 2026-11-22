@@ -14,6 +14,7 @@ Juego de aventura oscura que reinterpreta el Flautista de Hamelin en la Venecia 
 | `sprites/` | Recortes con fondo transparente: ratas (14 poses + atlas) y personajes del combate |
 | `prologo/` | Ilustraciones del prólogo |
 | `audio/` | Música |
+| `menu/` | Fondo e imagen del menú inicial |
 | `capturas/` | Capturas del prototipo en ordenador y móvil |
 
 ## Controles
