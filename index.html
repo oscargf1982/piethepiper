@@ -235,6 +235,7 @@ body.ingame #bMute{display:none}
   <audio id="mMonaca" src="audio/salmo-monaca.mp3" loop preload="auto"></audio>
   <audio id="mGuard" src="audio/guardianes.mp3" loop preload="auto"></audio>
   <audio id="mDottore" src="audio/dottore.mp3" loop preload="auto"></audio>
+  <audio id="mCarcel" src="audio/carcel.mp3" loop preload="auto"></audio>
   <audio id="mRe" src="audio/rey-de-las-ratas.mp3" loop preload="auto"></audio>
   <button id="bMute" title="Música" aria-label="Silenciar la música">🔊</button>
   <div class="overlay" id="title"><div id="mstage">
@@ -2183,7 +2184,7 @@ $('bAgain').onclick=()=>{location.reload();};
 $('spMel').innerHTML=pills(ENJ);$('spCard').disabled=true;setMoveUI(false);
 
 // ---------- Música (empieza con el primer toque: los navegadores bloquean el autoplay) ----------
-const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard'),dottore:$('mDottore'),re:$('mRe')};let curM='menu',unlocked=false,muted=false;
+const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard'),dottore:$('mDottore'),carcel:$('mCarcel'),re:$('mRe')};let curM='menu',unlocked=false,muted=false;
 Object.values(TR).forEach(a=>a.volume=0);
 try{muted=localStorage.getItem('ptp_mute')==='1';}catch(e){}
 function musicPlay(n){curM=n;}
@@ -3253,7 +3254,7 @@ async function scene7b(){
 
 // ---------- ACTO I · CAPÍTULO I · LAS PUERTAS CERRADAS (la fuga de las Prigioni Nuove) ----------
 async function a1s0(){ // Despertar en la celda
-  await chapterTitle('ACTO I','La peste · 1630');await chapterTitle('CAPÍTULO I','Las puertas cerradas');
+  musicPlay('carcel');await chapterTitle('ACTO I','La peste · 1630');await chapterTitle('CAPÍTULO I','Las puertas cerradas');
   still(aimg('pr_celda','despertar'),{z0:1.0,z1:1.08,dur:30});await fade(0,1.5);
   await dialog([N('Despiertas. No sabes cuánto has dormido. Ni dónde estás. Ni quién eres.'),N('Te duele la boca. Sabe a miel rancia.'),
     N('En el bolsillo, un cuaderno de cuero. Todas las páginas están en blanco menos una, escrita con tu letra.')]);
@@ -3268,7 +3269,7 @@ async function a1s0(){ // Despertar en la celda
   await fade(1,1);
 }
 async function a1s1(){ // El pasillo de las celdas: sigilo
-  setMoveUI(true);S.fade=1;const FY=472,GX=600;const pf=pulceFollow();
+  musicPlay('carcel');setMoveUI(true);S.fade=1;const FY=472,GX=600;const pf=pulceFollow();
   const g={gone:null,caught:0},cyc=7;let rats=null,flute=false;
   const look=()=>{if(g.gone!=null)return 'away';const q=gt%cyc;return q<3.8?'away':q<4.6?'turn':'watch';};
   const p=walkScene({img:aimg('pr_pasillo','c3_cripta'),y:FY,s:.62,start:110,maxX:905,exitX:905,need:['flauta'],blocked:'Sin tu flauta no vas a ninguna parte.',
@@ -3344,7 +3345,7 @@ async function a1s3(){ // La deuda de los Guardianes y la huida
   await memoryScene(c2img('c2_recuerdo','c1_recuerdo'),'Hamelin, 1284',[N('Túneles bajo una ciudad. Antorchas. Niños tumbados sobre paja, tosiendo, sin nadie que los cuide.'),
     N('Un concejal con gorro negro y cuello de piel te agarra del brazo y te habla al oído.'),
     L('El concejal','Ni una palabra, músico. Si los mercaderes se enteran, Hamelin muere.'),N('Tú miras a los niños. Uno de ellos tararea una canción que conoces.')],{why:'Al encajar en tu flauta el trozo que llevaban los Guardianes, la madera se calienta y late como un corazón. Te zumban los oídos, el suelo se inclina y te llevas la mano a la cabeza.'});
-  S.fx=null;still(aimg('pr_puerta','c1_fondamenta'),{z0:1.06,z1:1.0,dur:20});S.fx=has('pr_puerta')?null:nightTint(.45);await fade(0,1);
+  musicPlay('carcel');S.fx=null;still(aimg('pr_puerta','c1_fondamenta'),{z0:1.06,z1:1.0,dur:20});S.fx=has('pr_puerta')?null:nightTint(.45);await fade(0,1);
   await dialog([L('El Flautista','En Hamelin también hubo una enfermedad. Y también la escondieron.'),N('No sabes de dónde ha salido ese recuerdo. Pero sabes que es tuyo.')]);
   bookPage(['Los Guardianes','Un trozo de flauta.','La llave.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas se abre solo. Otra página, otra letra tuya que no recuerdas haber escrito.')]);
