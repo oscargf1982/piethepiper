@@ -2434,7 +2434,7 @@ async function c5s6(){ // Amanecer en casa de Bettina
     L('Tano','Yo las hago. Trescientos sesenta y nueve años esperando.'),
     N('Tano tararea la nana. Por un momento su cara te recuerda a la de un niño en la puerta de Hamelin.'),
     N('Greta abre los ojos y señala el carbón de sus letras, todavía en sus dedos: LORENZ. LAZZARETTO.'),
-    N('En la flauta ya solo falta la boquilla.')]);
+    N('En la flauta ya solo falta la virola de latón, el anillo que la sujeta. Sin ella pierde aire por las juntas.')]);
   await fade(1,1.5);musicPlay('game');
 }
 const C5_SCN=[[c5s0,'Cap. 5 · La puerta de agua'],[c5s1,'Cap. 5 · Las gradas'],[c5s2,'Cap. 5 · La fragua'],[c5s3,"Cap. 5 · Combate: Il Proto dell'Arsenale (nota FA)"],[c5s4,'Cap. 5 · La deuda del Proto'],[c5s5,'Cap. 5 · La dársena'],[c5s6,'Cap. 5 · Amanecer']];
@@ -2674,7 +2674,7 @@ C6_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.cre
   new MutationObserver(()=>{if(e.classList.contains('hidden')||!stats.c6||!stats.c6.book||$('endBook').dataset.c6)return;$('endBook').dataset.c6=1;
     $('endBook').textContent+=($('endBook').textContent?' · ':'Libro de las Deudas · ')+'La Tarantella: '+(stats.c6.book==='castigo'?'castigada.':'dijo la verdad.');}).observe(e,{attributes:true,attributeFilter:['class']});}
 // =================== CAPÍTULO 7 · EL LAZZARETTO ===================
-// Sin nota nueva: el último trozo es la boquilla y la flauta queda entera. Hechizo nuevo: Escala de Hamelin (DO-RE-MI-FA-SOL).
+// Sin nota nueva: el último trozo es la virola de latón (el anillo que une las piezas); sin ella la flauta pierde aire y no aguanta melodías largas. Hechizo nuevo: Escala de Hamelin (DO-RE-MI-FA-SOL).
 // Jefe: Il Priore del Lazzaretto (Lorenz, el niño ciego de Hamelin). Combate en la niebla: cada nota fallada le dice dónde estás.
 // Deja para el cap. 8: stats.c7.book ('castigo'|'verdad'), stats.c7.lorenz ('huido'|'perdonado'), stats.c7.pruebas, stats.c7.carta, marks7().
 const c7st=()=>(stats.c7=stats.c7||{});
@@ -2730,7 +2730,7 @@ async function c7s0(){ // La barca sin nombre
 async function c7s1(){ // San Clemente
   c7notes();c7st();setMoveUI(true);S.fade=1;const pf=pulceFollow(),tf=typeof tanoFollow==='function'?tanoFollow():null;let swing=null;
   const p=walkScene({img:c7img('c7_clemente','c3_canal'),y:472,s:.62,start:60,exitX:905,need:['campana','fosa'],fog:.4,blocked:'Todavía no sabes qué pasó aquí. Mira a tu alrededor.',
-    hint:'San Clemente. Jardines abandonados y campanas sin campanero.',
+    hint:'San Clemente. Jardines abandonados y campanas sin campanero. Al fondo, hay luz en la sacristía.',
     extra:(t,dt)=>{farBells(t,7);if(swing!=null&&gt-swing<4){ctx.save();ctx.strokeStyle='rgba(224,176,74,.5)';ctx.lineWidth=2;for(let w=0;w<3;w++){const k=((gt-swing)*.6+w*.33)%1;ctx.globalAlpha=1-k;ctx.beginPath();ctx.arc(525,215,20+k*120,0,7);ctx.stroke();}ctx.restore();}
       lantern(785,390,t,70);if(tf)tf(t,dt);pf(t,dt);},
     spots:[
@@ -2747,7 +2747,13 @@ async function c7s1(){ // San Clemente
         L('Las ratas (el guardia)','¿Y el carpintero? Ha estado con ellos.'),
         L('Las ratas (otra voz)','El carpintero vuelve a casa. Como todos. Nadie ha visto nada.'),
         N('Luego, solo el ruido de una pala.')])},
-      {id:'sacristia',x:785,y:370,label:'Sacristía',once:true,fn:async()=>{
+      {id:'luz',x:700,auto:true,r:30,fn:()=>stats.c7.pruebas?null:dialog([N('Ester se para en seco y señala la puerta entornada de la sacristía, con una vela encendida dentro.'),
+        L('Ester','Mira. Alguien ha dejado una luz. Si alguien firmó la salida de la cuarentena, el registro estará ahí dentro.'),
+        L('Ester','Podría ser lo más importante de toda la isla.')])},
+      {id:'irse',x:880,auto:true,r:25,fn:()=>stats.c7.pruebas?null:dialog([L('Ester','¿Nos vamos sin mirar en la sacristía?'),
+        L('Ester','Sin algo escrito, nadie va a creernos. Ni al Senado ni a Venecia les bastará con lo que digan las ratas.'),
+        N('Puedes volver atrás y entrar en la sacristía, o seguir hacia el Lazzaretto.')])},
+      {id:'sacristia',x:785,y:370,label:'Sacristía (importante)',once:true,fn:async()=>{
         await dialog([N('La sacristía tiene la puerta entornada y una vela encendida dentro. Huele a cera y a papel mojado.'),
           L('Ester','El registro de la cuarentena. Si alguien firmó la salida, tiene que estar aquí.'),
           N('Hay un arcón cerrado con cinco anillas de latón, de la más grande a la más pequeña. Cada una vibra con una nota distinta.'),
@@ -2800,7 +2806,8 @@ async function c7s3(){ // Il Priore
   c7notes();c7st();still(c7img('c7_capilla','c3_cripta_c'),{z0:1.0,z1:1.06,dur:40});
   S.fx=(t,dt)=>{c7fog(t,.5,300,960,380);sprite('priore_frente',650,345,{s:.78,sy:1+Math.sin(t*1.2)*.006});lensGlow(651,345-326*.78,.6+.4*Math.sin(t*2));farBells(t,5);};await fade(0,1.2);
   await dialog([N('En el centro de la capilla, delante del altar, hay un hombre altísimo con la máscara de pico más grande que has visto. Las lentes brillan verdes.'),
-    N('Sostiene un báculo lleno de campanas. Atado entre ellas, un trozo de madera con boquilla de latón: la cabeza de tu flauta.'),
+    N('Sostiene un báculo lleno de campanas. Colgado entre ellas, un anillo de latón gastado, con los mismos grabados que tu flauta: la virola que une sus piezas.'),
+    N('Por eso tus melodías se quedaban cortas. Sin ella, la flauta pierde aire por las juntas.'),
     L('Il Priore','Te oí bajar de la barca en San Clemente. Oigo respirar a tus ratas. Oigo cómo te late el corazón, que no debería latir.'),
     L('Il Priore','Y oigo a los otros dos. Tobias, que arrastra la muleta. Greta, que pisa como si el suelo fuera a escaparse.'),
     L('El Flautista','Lorenz.'),
@@ -2824,9 +2831,10 @@ async function c7shift(C){
     N('Greta, a su lado, tiene las palmas pegadas a las losas. Señala un punto en la niebla, sin dudar.'),
     L('Tano','¡Ahí! ¡Greta siente sus pasos!'),
     L('Il Priore','Tobias… Greta… ¿Estáis con él? ¿Después de lo que nos hizo?'),
-    N('En ese instante de duda, Pulce trepa por el báculo, entre las campanas, y muerde la cuerda que sujeta la boquilla.',{sfx:()=>{C.frag=gt;}})]);
+    N('En ese instante de duda, Pulce trepa por el báculo, entre las campanas, y muerde la cuerda que sujeta la virola.',{sfx:()=>{C.frag=gt;}})]);
   await wait(1.3);C.frag=null;bell();
-  await dialog([N('La boquilla cae en tu mano. Encaja en la flauta con un clic que suena más fuerte que todas las campanas.'),
+  await dialog([N('La virola cae en tu mano. La deslizas sobre la junta de la flauta y encaja con un clic que suena más fuerte que todas las campanas.'),
+    N('Ya no se escapa el aire. Por fin puedes tocar melodías largas, sin cortes.'),
     N('La flauta está entera. Por primera vez en trescientos sesenta y nueve años.')]);
   if(!stats.c7.escala){stats.c7.escala=true;
     await dialog([N(`Ahora el aire recorre la flauta de arriba abajo. <b>Escala de Hamelin</b> ${pills(SPELLS.escala.notes)}: de la nota más grave a la quinta, sin saltarte ninguna.`),
@@ -2900,7 +2908,8 @@ async function c7s5(){ // El recuerdo y la deuda de Lorenz
       L('El Flautista','Lorenz. Volví. Pero la puerta estaba cerrada y me fui. Tenía que haberme quedado allí hasta que la abrieran.'),
       L('El Flautista','Y juré con tanto odio que os até a mí. Si seguís vivos, es por mi culpa. Perdóname.'),
       N('Lorenz se queda muy quieto. Luego se quita la máscara de pico, despacio.'),
-      N('Debajo hay un hombre viejísimo, con los ojos blancos. Pero cuando habla, su voz es la de un niño.'),
+      N('Debajo hay un hombre viejísimo, con los ojos blancos. La misma mancha negra que llevas tú le cubre media cara, del cuello a la frente.'),
+      N('Ha envejecido siglos, de puro rencor, y aun así no puede morir. Pero cuando habla, su voz es la de un niño.'),
       L('Lorenz','Te oí. Esa noche te oí. Les dije a todos que te oía. Me dijeron que era el viento.'),
       L('Lorenz','Trescientos años creyendo que me habían mentido ellos. Y era a mí a quien no creía.'),
       N('Saca de su capa una carta doblada, con un sello roto, y te la pone en la mano.'),
