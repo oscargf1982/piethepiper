@@ -3246,7 +3246,7 @@ async function scene6b(){
 }
 async function scene7b(){
   still(aimg('pr_celda','despertar'),{z0:1.12,z1:1.0,dur:16});S.fx=()=>{ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(0,0,960,540);};await fade(0,2.5);
-  await dialog([N('Una celda. Paja húmeda. Una ventana con barrotes por la que entra la luna.'),
+  await dialog([N('Una celda de las Prigioni Nuove, la cárcel nueva de Venecia, al otro lado del Rio di Palazzo, frente al Palacio Ducal.'),N('Paja húmeda. Una ventana con barrotes por la que entra la luna.'),
     N('Intentas recordar cómo has llegado aquí. Cada recuerdo se te escurre entre los dedos como agua.'),
     L('El Flautista','Una promesa no desaparece porque olvidéis haberla hecho.'),
     N('No sabes a quién se lo dices. Ni por qué.'),
@@ -3259,6 +3259,7 @@ async function a1s0(){ // Despertar en la celda
   musicPlay('carcel');await chapterTitle('ACTO I','La peste · 1630');await chapterTitle('CAPÍTULO I','Las puertas cerradas');
   still(aimg('pr_celda','despertar'),{z0:1.0,z1:1.08,dur:30});await fade(0,1.5);
   await dialog([N('Despiertas. No sabes cuánto has dormido. Ni dónde estás. Ni quién eres.'),N('Te duele la boca. Sabe a miel rancia.'),
+    N('En la pared, alguien ha rascado con una uña: «Prigioni Nuove. Año del Señor de 1630. Que Dios me saque de aquí».'),N('Prigioni Nuove. El nombre no te dice nada.'),
     N('En el bolsillo, un cuaderno de cuero. Todas las páginas están en blanco menos una, escrita con tu letra.')]);
   bookPage(['Alvise Morosin','1.000 ducados','Una promesa.']);await wait(1.5);
   await dialog([L('El Flautista','No sé quién eres.'),L('El Flautista','Pero me debes algo.')]);S.overlay=null;
