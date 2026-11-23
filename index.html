@@ -3195,7 +3195,7 @@ function maskers(t,y,{n=9,x0=40,x1=920,s=1,dark=.8}={}){for(let i=0;i<n;i++){con
 // ---------- PRÓLOGO (nuevo final): el veneno del Dottore y la celda ----------
 async function scene6b(){
   still('pacto',{z0:1.0,z1:1.1,x0:.55,x1:.35,dur:20});await fade(0,1.2);
-  await dialog([N('Dos semanas después. La Magistratura de la Sanidad, de madrugada. Vienes a cobrar.'),
+  await dialog([N('Dos semanas después. La Magistratura de la Sanidad, al anochecer. Vienes a cobrar.'),
     L('Alvise Morosin','Maestro. Venecia os está muy agradecida.'),
     L('El Flautista','Mil ducados. Y vuestra palabra.'),
     L('Alvise Morosin','Mañana, mañana. Hoy la ciudad tiene otras cuentas: la gente ha empezado a morir.'),
@@ -3203,7 +3203,8 @@ async function scene6b(){
     N('Detrás de ti se cierra la puerta. Pasos de botas en el pasillo.'),
     L('Alvise Morosin','Prendedlo. Sin ruido.')]);
   await fade(1,.8);musicPlay('guardianes');S.mode='combat';S.cb={foe:'guardias',php:50,pmax:50,ehp:28,emax:28,phurt:0,ehurt:0,name:'',tilt0:gt+.3};await fade(0,.8);
-  await dialog([N('Huyes escaleras abajo hasta la Piazzetta, desierta a esta hora. Los guardias te alcanzan entre las dos columnas.'),
+  await dialog([N('Huyes escaleras abajo hasta la Piazzetta. Está llena de gente con antorchas: entre las dos columnas han levantado un tablado para rezar por los primeros muertos de la fiebre.'),
+    N('Subes al tablado para cruzar por encima de la multitud. Los guardias te cortan el paso allí arriba, delante de todos. Nadie grita. Nadie te ayuda. Solo miran.'),
     N('Las ratas te obedecen con una sola melodía: <b>Enjambre</b>, SI-LA-SOL. Tócala cuando sea tu turno.'),N('Cuando ataquen los guardias, escucha su melodía y repítela para esquivar.')]);
   while(!(await combatGuards())){stats.tries++;say('');await dialog([N('Los guardias te derriban... pero te levantas otra vez.')]);}
   say('');musicPlay('dottore');
