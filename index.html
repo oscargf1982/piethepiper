@@ -1910,8 +1910,8 @@ async function c3s0(){ // El pozo de San Zaccaria
   still('c3_pozo',{z0:1.0,z1:1.06,dur:40});S.fx=pozoFx;await fade(0,1.2);
   await dialog([N('Campo di San Zaccaria, de noche. En el centro, el brocal de un pozo tapado con tablas.'),
     L('Ester','Los pozos de Venecia no son pozos: son cisternas que guardan el agua de la lluvia. Esta se secó con la peste.'),
-    L('Ester','Según el cuaderno de mi maestro, al carpintero de San Clemente no lo llevaron a Sant\'Ariano. Lo bajaron de noche a la cripta de San Zaccaria. Y esta cisterna da a la cripta.'),
-    L('Ester','Allí abajo vive una monja. Dicen que canta para que los muertos no hablen.'),
+    L('Ester','Según el cuaderno de mi maestro, al carpintero de San Clemente no lo llevaron a Sant\'Ariano. Lo bajaron de noche a la cripta de San Zaccaria, debajo de la capilla de San Tarasio. Y esta cisterna da a la cripta.'),
+    L('Ester','San Zaccaria es un convento de monjas, todas hijas de las mejores familias de Venecia. Allí abajo vive una de ellas. Dicen que canta para que los muertos no hablen.'),
     L('El Flautista','Los muertos no hablan.'),L('Ester','En esta ciudad todo el mundo tiene miedo de que lo hagan.'),
     N('Pulce salta al borde del pozo, olfatea y se mete dentro sin pensarlo.'),
     L('Ester','Yo me quedo vigilando. Si al amanecer no has vuelto, se lo contaré a Tano.')]);
@@ -1948,6 +1948,9 @@ async function c3s1(){ // La cripta
         ctx.drawImage(im,755*f,118*f,166*f,268*f,755,118-k*230,166,268);ctx.restore();}},
     spots:[
       {id:'nichos',x:315,y:235,label:'Calaveras',once:true,fn:()=>dialog([N('Cientos de calaveras ordenadas en nichos. Algunas tienen un nombre escrito con carbón en la frente.'),N('Las más nuevas no tienen nombre. Solo una fecha: junio de 1630.')])},
+      {id:'dux',x:360,y:325,label:'Lápidas',once:true,fn:()=>dialog([N('Columnas bajas, bóvedas de crucería y tres naves medio inundadas. Esta cripta es más vieja que casi toda Venecia.'),
+        N('En las lápidas del muro, bajo los nichos, se leen nombres gastados: Orso Participazio, Pietro Tribuno… Ocho de los primeros dux duermen aquí, con el agua a los pies.'),
+        L('El Flautista','Y a su lado, en cajas de tablas, carpinteros sin nombre.')])},
       {id:'canto',x:300,auto:true,r:30,fn:()=>dialog([N('Del fondo de la cripta llega un canto. Una voz de mujer, sola, que no toma aire nunca.'),N('Pulce se pone a dar vueltas sobre sí misma, chillando. El canto confunde a las ratas.'),L('El Flautista','Tranquila. Escúchame a mí.')])},
       {id:'carpintero',x:520,y:405,label:'Ataúd nuevo',once:true,fn:c3carpintero},
       {id:'reja',x:838,y:250,label:'Reja de huesos',once:true,fn:async()=>{
