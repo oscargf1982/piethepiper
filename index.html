@@ -236,6 +236,7 @@ body.ingame #bMute{display:none}
   <audio id="mGuard" src="audio/guardianes.mp3" loop preload="auto"></audio>
   <audio id="mDottore" src="audio/dottore.mp3" loop preload="auto"></audio>
   <audio id="mCarcel" src="audio/carcel.mp3" loop preload="auto"></audio>
+  <audio id="mCanna" src="audio/cannaregio.mp3" loop preload="auto"></audio>
   <audio id="mRe" src="audio/rey-de-las-ratas.mp3" loop preload="auto"></audio>
   <button id="bMute" title="Música" aria-label="Silenciar la música">🔊</button>
   <div class="overlay" id="title"><div id="mstage">
@@ -1377,7 +1378,7 @@ function drawCombat1(t,dt){
 
 // ----- Escenas -----
 async function c1s0(){ // La barca
-  S.mode='black';S.fade=1;S.title={t0:gt,main:'CAPÍTULO II',sub:'La deuda del médico'};await fade(0,1.2);bell();await wait(4.2);await fade(1,1);S.title=null;
+  S.mode='black';S.fade=1;S.title={t0:gt,main:'CAPÍTULO II',sub:'La deuda del médico'};await fade(0,1.2);bell();await wait(4.2);await fade(1,1);S.title=null;musicPlay('cannaregio');
   if(has('c1_barca'))still('c1_barca',{z0:1.0,z1:1.1,dur:16});else{S.mode='still';S.img=null;S.kb=null;S.fx=(t,dt)=>lagoonDawn(t,dt);}
   await fade(0,1.5);
   await dialog([N('Remas lejos de las prisiones en la barca robada. Nadie la echará de menos.'),N('Pulce va en la proa, con el hocico al viento. Sabe adónde vais.'),
@@ -1385,7 +1386,7 @@ async function c1s0(){ // La barca
   await fade(1,1.2);S.fx=null;
 }
 async function c1s1(){ // Fondamenta de Cannaregio
-  setMoveUI(true);S.fade=1;const R=has('c1_fondamenta'),FY=R?428:515,MX=R?700:820;let med={x:MX,gone:null,face:-1},runRats=null;const pf=pulceFollow();
+  musicPlay('cannaregio');setMoveUI(true);S.fade=1;const R=has('c1_fondamenta'),FY=R?428:515,MX=R?700:820;let med={x:MX,gone:null,face:-1},runRats=null;const pf=pulceFollow();
   const p=walkScene({img:R?'c1_fondamenta':'fondamenta',y:FY,s:R?.62:.7,start:R?200:70,maxX:R?745:905,exitX:R?745:905,need:['medico'],blocked:'Un médico vigila el final del muelle. No puedes pasar así.',
     hint:'Cannaregio. Camina, mira y busca la forma de pasar.',
     extra:(t,dt)=>{pf(t,dt);
@@ -1410,7 +1411,7 @@ async function c1s2(){ // El puente de Tano: dúo
   await dialog([N('En el mismo puente de hace tres semanas, el niño cojo sigue tocando su flauta de caña.'),N('Al verte, deja de tocar. Mira tu abrigo. Mira tu flauta.'),
     L('Tano','Bonita flauta. Aunque parece que alguien la ha mordido.'),L('Tano','Yo te he visto antes. Hace semanas pasaste por aquí. Y llevabas todas las ratas de Venecia detrás.'),
     L('El Flautista','No me acuerdo.'),L('Tano','¿Ah, no? Pues esta canción sí te la sabes. Se te nota en la cara.')]);
-  musicPlay('game');S.mode='stillstaff';
+  musicPlay('cannaregio');S.mode='stillstaff';
   await dialog([N('Tano toca el comienzo de la canción de cuna. Escucha su frase y repítela.')]);
   const MEL=['SOL','LA','SI','LA','SOL'];let best=0;
   for(let r=0;r<2;r++){say(`La frase de Tano (${r+1}/2): `+pills(MEL));wantNotes(MEL);const p=await perform(MEL);wantNotes([]);const pw=scorePerf(p);best=Math.max(best,pw);
@@ -1423,7 +1424,7 @@ async function c1s2(){ // El puente de Tano: dúo
   if(c===0)await dialog([N('Tano coge la moneda y la gira hacia la luz. El niño grabado lleva una muleta.'),L('Tano','Qué rara. El niño se parece a mí…'),L('Tano','Bah. Todos los cojos nos parecemos.'),N('Te la devuelve deprisa. Durante un rato no dice nada.')]);
   else await dialog([N('Dejas la moneda donde está. Por alguna razón, no quieres que la vea todavía.')]);
   await dialog([L('Tano','Ven. Mi abuela querrá conocerte. Le gusta la gente que se sabe su canción.')]);
-  await fade(1,1);musicPlay('game');
+  await fade(1,1);musicPlay('cannaregio');
 }
 async function c1s3(){ // Casa de Bettina
   if(has('c1_casa'))still('c1_casa',{z0:1.0,z1:1.08,dur:30});else{S.mode='still';S.img=null;S.fx=t=>candleRoom(t);}
@@ -1436,7 +1437,7 @@ async function c1s3(){ // Casa de Bettina
   await dialog([N('Tano te enseña una figurita de madera, gastada de tanto tocarla: un hombre con capucha y una flauta.'),
     L('Tano','La tengo desde siempre. No sé quién la hizo. Por debajo pone algo.'),N('Grabado con punta de cuchillo: «Para que nunca olvides el camino de vuelta».'),
     N('Algo se te encoge en el pecho. No sabes qué es. Hace mucho que no sientes nada.'),L('El Flautista','Traeré las medicinas.')]);
-  await fade(1,1);S.fx=null;musicPlay('game');
+  await fade(1,1);S.fx=null;musicPlay('cannaregio');
 }
 async function c1s4(){ // La calle de los muertos
   if(has('c1_calle'))still('c1_calle',{z0:1.0,z1:1.06,x0:.5,x1:.5,y0:1,y1:1,oy:-95,dur:60});else still('castello',{z0:1.08,z1:1.18,x0:.3,x1:.55,dur:40});S.fx=(t,dt)=>drawFog(dt,.8);await fade(0,1.2);
@@ -1512,7 +1513,7 @@ async function c1s7(){ // La carta, el recuerdo y el libro
     L('El alcalde de Hamelin','Mil florines si libráis Hamelin de sus ratas. Palabra del consejo.'),N('Una mano con guante rojo coge la bolsa. Es tu mano. No consigues verte la cara.')]);
   await fade(1,.4);S.fx=null;S.mode='black';S.fade=0;S.fadeTo=0;
   await dialog([L('Una voz de niño, asustada','¿Adónde nos llevas?')]);
-  await fade(1,.6);musicPlay('game');
+  await fade(1,.6);musicPlay('cannaregio');
   if(has('c1_derrota'))still('c1_derrota',{z0:1.1,z1:1.0,x0:.5,x1:.6,dur:40});else S.mode='combat1';await fade(0,1);
   await dialog([N('Vuelves al puente. Tienes las manos heladas.'),L('El Flautista','Entonces es verdad. Me los llevé.')]);
   // Libro de las Deudas
@@ -2203,12 +2204,12 @@ $('bAgain').onclick=()=>{location.reload();};
 $('spMel').innerHTML=pills(ENJ);$('spCard').disabled=true;setMoveUI(false);
 
 // ---------- Música (empieza con el primer toque: los navegadores bloquean el autoplay) ----------
-const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard'),dottore:$('mDottore'),carcel:$('mCarcel'),re:$('mRe')};let curM='menu',unlocked=false,muted=false;
+const TR={menu:$('mMenu'),game:$('mGame'),cuna:$('mCuna'),monaca:$('mMonaca'),guardianes:$('mGuard'),dottore:$('mDottore'),carcel:$('mCarcel'),cannaregio:$('mCanna'),re:$('mRe')};let curM='menu',unlocked=false,muted=false;
 Object.values(TR).forEach(a=>a.volume=0);
 try{muted=localStorage.getItem('ptp_mute')==='1';}catch(e){}
 function musicPlay(n){curM=n;}
 function wantVol(n){if(muted||n!==curM)return 0;
-  if(n==='game'){const busy=['tut','exodo','combat','combat1','stillstaff'].includes(S.mode)||!!P||CAL.on;if(busy)return useMic?0:.12;return .4;}
+  if(n==='game'||n==='cannaregio'){const busy=['tut','exodo','combat','combat1','stillstaff'].includes(S.mode)||!!P||CAL.on;if(busy)return useMic?0:.12;return .4;}
   if(n==='cuna')return useMic&&(P||CAL.on)?0:(P?.15:.55);
   if(n==='monaca'||n==='guardianes'||n==='dottore'||n==='re')return (P||CAL.on)?(useMic?0:.15):.45;return .7;}
 setInterval(()=>{for(const n in TR){const a=TR[n],w=wantVol(n);if(w>0&&a.paused&&(unlocked||!a._tried)){a._tried=1;a.play().catch(()=>{});}
