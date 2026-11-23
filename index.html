@@ -1089,7 +1089,8 @@ async function scene1(){
   await fade(1,.8);still('tano',{z0:1.05,z1:1.14,x0:.6,x1:.45,dur:12});await fade(0,1);
   musicPlay('cuna');
   await dialog([N('En un puente, un niño cojo toca una melodía para ganarse unas monedas. Una canción de cuna.'),N('Tú la conoces. No sabes de qué.'),
-    N('El niño deja de tocar al verte pasar. Te mira como si te conociera. Como si llevara mucho tiempo esperándote.')]);
+    N('Sobre su hombro dormita una rata pequeña con una oreja mordida.'),
+    N('El niño deja de tocar al verte pasar. Te mira como si te conociera. Como si llevara mucho tiempo esperándote. La rata abre los ojos y no te los quita de encima.')]);
   await fade(1,1);musicPlay('game');
 }
 async function scene2(){
@@ -1418,7 +1419,11 @@ async function c1s2(){ // El puente de Tano: dúo
   still(has('c1_tano')?'c1_tano':'tano',{z0:1.05,z1:1.15,x0:.6,x1:.45,dur:30});await fade(0,1);musicPlay('cuna');
   await dialog([N('En el mismo puente de hace tres semanas, el niño cojo sigue tocando su flauta de caña.'),N('Al verte, deja de tocar. Mira tu abrigo. Mira tu flauta.'),
     L('Tano','Bonita flauta. Aunque parece que alguien la ha mordido.'),L('Tano','Yo te he visto antes. Hace semanas pasaste por aquí. Y llevabas todas las ratas de Venecia detrás.'),
-    L('El Flautista','No me acuerdo.'),L('Tano','¿Ah, no? Pues esta canción sí te la sabes. Se te nota en la cara.')]);
+    L('El Flautista','No me acuerdo.'),
+    N('Pulce salta de tu bolsa a la barandilla, junto a Tano, y le olfatea la muleta. Tano le rasca detrás de la oreja mordida sin mirarla, como quien saluda a alguien de casa.'),
+    L('Tano','Hola, bicho. Al final lo encontraste.'),L('El Flautista','¿La conoces?'),
+    L('Tano','…Todas las ratas de Cannaregio se parecen.'),
+    L('Tano','¿Así que no te acuerdas? Pues esta canción sí te la sabes. Se te nota en la cara.')]);
   musicPlay('cannaregio');S.mode='stillstaff';
   await dialog([N('Tano toca el comienzo de la canción de cuna. Escucha su frase y repítela.')]);
   const MEL=['SOL','LA','SI','LA','SOL'];let best=0;
@@ -2664,6 +2669,9 @@ async function c6s5(){ // Tobias
     L('El Flautista','Y tú me pagaste. Fuiste el único de Hamelin que me pagó.'),
     L('Tano','(mirando el grabado) Lo hice yo. Con la navaja de mi padre. Me salió la muleta torcida.'),
     N('Te la devuelve, cerrándote los dedos encima. «Todavía no. Cuando acabes».'),
+    N('Pulce trepa por la muleta hasta su hombro, como ha hecho siempre.'),
+    L('Tano','Ella vino conmigo desde Hamelin. Nunca se ha ido. Cuando se corrió la voz de que habían encerrado al brujo de las ratas, le di la moneda y le dije: «Ve a buscarle. Y dale esto, para que se acuerde de que prometió volver».'),
+    L('El Flautista','Fuiste tú quien la mandó a la celda.'),L('Tano','Alguien tenía que ir a por ti, para variar.'),
     ...(stats.c6.book==='verdad'?[N('Greta se sienta junto a Tano y apoya la mano en la muleta, para sentir cuándo habla.')]:[N('Al otro lado de la plaza, Greta os mira escondida detrás de una columna. No se va.')]),
     L('Ester','Si los niños de Hamelin siguen vivos… faltaba uno. El que no veía.'),
     N('Greta coge un trozo de carbón del suelo y escribe en las losas, con letras grandes y torcidas:'),
@@ -3340,7 +3348,7 @@ async function a1s0(){ // Despertar en la celda
   if(has('pr_pulce')){await fade(1,.5);still('pr_pulce',{z0:1.1,z1:1.0,x0:.45,x1:.5,dur:30});await fade(0,.8);}
   await dialog([N('Algo se mueve en la paja. Una rata pequeña con la oreja mordida te olfatea la mano.'),N('Te muerde un dedo.'),
     L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.'),
-    N('Pulce deja caer algo en la paja: una moneda antigua, gastada de tanto tocarla. No es veneciana: es de alguna ciudad del norte.'),N('En una cara alguien ha rayado, a punta de navaja y con mano torpe de niño, la figura de un niño con muleta.'),N('No sabes por qué, pero estás seguro de una cosa: es la única moneda que te han pagado nunca.'),
+    N('Pulce deja caer algo en la paja: una moneda antigua, gastada de tanto tocarla. No es veneciana: es de alguna ciudad del norte.'),N('En una cara alguien ha rayado, a punta de navaja y con mano torpe de niño, la figura de un niño con muleta.'),N('No sabes por qué, pero estás seguro de una cosa: es la única moneda que te han pagado nunca.'),N('Pulce huele a canal y a caña de flauta. Ha venido de lejos, y alguien la ha mandado.'),
     N('Al cogerla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('La guardas en el bolsillo.'),
     N('Pulce trepa por la puerta y se mete en la cerradura. Roe. Roe. Roe.',{sfx:()=>squeaks(6)}),N('Clic.')]);
   await fade(1,1);
