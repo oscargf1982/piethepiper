@@ -1486,6 +1486,7 @@ async function c1s7(){ // La carta, el recuerdo y el libro
   await dialog([N('Las iniciales de Alvise Morosin. Tu deudor.'),L('El Flautista','San Clemente. Donde empezó todo. Y me echaron la culpa a mí.')]);
   S.overlay=null;await fade(1,.8);
   // Recuerdo de Hamelin
+  await memoryOnset(has('c1_recuerdo')?'c1_recuerdo':'pacto','La carta te tiembla entre los dedos. San Clemente... Te zumban los oídos, el suelo se inclina y te llevas la mano a la cabeza.');
   musicPlay(null);
   if(has('c1_recuerdo'))still('c1_recuerdo',{z0:1.0,z1:1.12,dur:16});else still('pacto',{z0:1.05,z1:1.15,x0:.4,x1:.6,dur:16});
   S.fx=(t)=>{if(!has('c1_recuerdo')){ctx.save();ctx.globalCompositeOperation='color';ctx.fillStyle='#8a6a3a';ctx.fillRect(0,0,960,540);ctx.restore();}
@@ -1849,7 +1850,21 @@ function drawBoss(t,dt){
     ctx.save();ctx.translate(x,y);ctx.rotate(q*9);ctx.shadowColor='#e0b04a';ctx.shadowBlur=18;ctx.fillStyle='#6b4423';ctx.fillRect(-14,-3,28,6);ctx.fillStyle='#e0b04a';ctx.fillRect(-4,-4,3,8);ctx.fillRect(6,-4,3,8);ctx.restore();}
 }
 // Recuerdo de Hamelin en sepia sobre cualquier imagen
-async function memoryScene(img,caption,lines,{z0=1.0,z1=1.12,tint=true}={}){
+// Aviso de que llega un recuerdo: mareo, zumbido, latidos y destellos borrosos de la escena que viene
+async function memoryOnset(img,why){
+  musicPlay(null);S.mode='black';S.fx=null;S.fade=0;S.fadeTo=0;const t0=gt;
+  try{tone(2800,4,.025);}catch(e){}
+  const hb=setInterval(()=>{try{thud(.35);setTimeout(()=>thud(.22),180);}catch(e){}},900);
+  S.overlay=()=>{const k=gt-t0,im=IMG[img];
+    if(ready(im)){const a=Math.pow(Math.max(0,Math.sin(k*2.4-1)),4)*.55;
+      if(a>.01){drawCover(im,{z:1.25,cx:.5+Math.sin(k*4.3)*.02,alpha:a,filter:'blur(4px) sepia(1)'});drawCover(im,{z:1.25,cx:.5-Math.sin(k*4.3)*.03,alpha:a*.45,filter:'blur(7px) sepia(1)'});}}
+    const p=.5+.5*Math.sin(k*7);const g=ctx.createRadialGradient(480,270,120,480,270,560);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(110,12,10,${.25+.25*p})`);ctx.fillStyle=g;ctx.fillRect(0,0,960,540);};
+  await dialog([N(why||'El trozo de flauta que acabas de recuperar late como un corazón. Te zumban los oídos, el suelo se inclina y te llevas la mano a la cabeza.'),
+    L('El Flautista',(stats.memN=(stats.memN||0)+1)===1?'Esta música... ¿Por qué la conozco?':'Otra vez no... ¿Qué me pasa?'),N('Una melodía muy antigua te arrastra hacia atrás. Hacia Hamelin.')]);
+  clearInterval(hb);S.overlay=null;S.fade=1;S.fadeTo=1;
+}
+async function memoryScene(img,caption,lines,{z0=1.0,z1=1.12,tint=true,why}={}){
+  await memoryOnset(img,why);
   musicPlay(null);still(img,{z0,z1,dur:18});
   S.fx=()=>{if(tint){ctx.save();ctx.globalCompositeOperation='color';ctx.fillStyle='#8a6a3a';ctx.fillRect(0,0,960,540);ctx.restore();}
     const g=ctx.createRadialGradient(480,270,150,480,270,560);g.addColorStop(0,'rgba(40,25,10,0)');g.addColorStop(1,tint?'rgba(20,12,6,.95)':'rgba(20,12,6,.55)');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);};
@@ -3326,8 +3341,8 @@ async function a1s3(){ // La deuda de los Guardianes y la huida
   ensureNotes(['DO']);
   await memoryScene(c2img('c2_recuerdo','c1_recuerdo'),'Hamelin, 1284',[N('Túneles bajo una ciudad. Antorchas. Niños tumbados sobre paja, tosiendo, sin nadie que los cuide.'),
     N('Un concejal con gorro negro y cuello de piel te agarra del brazo y te habla al oído.'),
-    L('El concejal','Ni una palabra, músico. Si los mercaderes se enteran, Hamelin muere.'),N('Tú miras a los niños. Uno de ellos tararea una canción que conoces.')]);
-  still(aimg('pr_puerta','c1_fondamenta'),{z0:1.06,z1:1.0,dur:20});S.fx=has('pr_puerta')?null:nightTint(.45);await fade(0,1);
+    L('El concejal','Ni una palabra, músico. Si los mercaderes se enteran, Hamelin muere.'),N('Tú miras a los niños. Uno de ellos tararea una canción que conoces.')],{why:'Al encajar en tu flauta el trozo que llevaban los Guardianes, la madera se calienta y late como un corazón. Te zumban los oídos, el suelo se inclina y te llevas la mano a la cabeza.'});
+  S.fx=null;still(aimg('pr_puerta','c1_fondamenta'),{z0:1.06,z1:1.0,dur:20});S.fx=has('pr_puerta')?null:nightTint(.45);await fade(0,1);
   await dialog([L('El Flautista','En Hamelin también hubo una enfermedad. Y también la escondieron.'),N('No sabes de dónde ha salido ese recuerdo. Pero sabes que es tuyo.')]);
   bookPage(['Los Guardianes','Un trozo de flauta.','La llave.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas se abre solo. Otra página, otra letra tuya que no recuerdas haber escrito.')]);
@@ -3344,10 +3359,10 @@ async function a1s3(){ // La deuda de los Guardianes y la huida
       L('Matteo','La de la puerta del Ghetto. Llévatela. Yo ya no quiero cerrar nada.'),
       N('Luego tira de la cadena y la reja de la puerta de agua sube despacio.')]);}
   await fade(1,1);
-  still('barca',{z0:1.0,z1:1.1,x0:.4,x1:.65,dur:16});await fade(0,1.2);
+  still(aimg('pr_suspiros','puente'),{z0:1.0,z1:1.1,x0:.4,x1:.65,dur:16});S.fx=has('pr_suspiros')?null:nightTint(.35);await fade(0,1.2);
   await dialog([N('Una barca amarrada. El canal. Encima de tu cabeza pasa el Puente de los Suspiros, por donde los presos ven Venecia por última vez.'),
     N('Tú la ves por primera vez. O eso crees.'),L('El Flautista','Il Dottore del Ponte. Cannaregio.'),N('Pulce salta a la proa.')]);
-  await fade(1,1.2);
+  await fade(1,1.2);S.fx=null;
 }
 
 // ---------- ACTO I · CAPÍTULO II (Ghetto): entrar con la llave de Matteo o por el desagüe ----------
