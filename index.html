@@ -605,7 +605,7 @@ function flashPad(name){const b=$('pad_'+name);if(!b)return;b.classList.add('on'
 ['SI','LA','SOL'].forEach(k=>{const n=NOTES[k],b=document.createElement('button');b.className='note';b.id='pad_'+k;b.style.background=n.color;
   b.innerHTML=`${n.label}<small>tecla ${n.key.toUpperCase()}</small>`;b.addEventListener('pointerdown',e=>{e.preventDefault();pressKey(k);});$('pad').appendChild(b);});
 {const n=NOTES.DO,b=document.createElement('button');b.className='note hidden';b.id='pad_DO';b.style.background=n.color;
-  b.innerHTML=`${n.label}<small>tecla F</small>`;b.addEventListener('pointerdown',e=>{e.preventDefault();pressKey('DO');});$('pad').prepend(b);}
+  b.innerHTML=`${n.label}<small>tecla ${NOTES.DO.key.toUpperCase()}</small>`;b.addEventListener('pointerdown',e=>{e.preventDefault();pressKey('DO');});$('pad').prepend(b);}
 function wantNotes(arr){NOTE_ORDER.forEach(k=>$('pad_'+k).classList.toggle('want',arr.includes(k)));}
 
 // ---------- Interpretación con ritmo (éxodo y combate) ----------
@@ -1996,7 +1996,7 @@ async function c3shift(C){
   C.frag=null;squeaks(4);await wait(.8);
   await dialog([N('Pulce se tira al agua sin pensarlo. Bucea entre los huesos y vuelve con el trozo entre los dientes, chorreando.'),
     N('Las ratas también saben nadar. Solo hacía falta que alguien se lo pidiera.'),N('Encajas el trozo en la flauta. Por primera vez suena una nota grave.')]);
-  bell();await learnNote('MI',[N(`Nota nueva: ${pill('MI')} grave. Se toca con ${NOTES.MI.finger}. Teclado: W.`),N('Es una nota grave: tapa bien los agujeros con la yema de los dedos y sopla suave, sin forzar.')]);
+  bell();await learnNote('MI',[N(`Nota nueva: ${pill('MI')} grave. Se toca con ${NOTES.MI.finger}. Teclado: ${NOTES.MI.key.toUpperCase()}.`),N('Es una nota grave: tapa bien los agujeros con la yema de los dedos y sopla suave, sin forzar.')]);
   await dialog([N(`Con el ${pill('MI')} las ratas entienden una orden nueva: «al agua».`),
     N(`<b>Marea</b> ${pills(SPELLS.marea.notes)}: las nadadoras atacan desde el suelo inundado y te quitan la confusión del salmo.`)]);
 }
@@ -2138,7 +2138,7 @@ async function c4shift(C){
   await dialog([N('El rey se revuelve y la cadena se le clava en el nudo. Cuanto más se asusta, más se ahoga.'),
     N('Pulce sale de tu bolsa, trepa por las colas y tira del trozo de flauta con los dientes.'),N('El trozo se suelta y rueda hasta tus pies.',{sfx:()=>{C.frag=gt;}})]);
   await wait(1.3);C.frag=null;bell();
-  await learnNote('RE',[N(`Nota nueva: ${pill('RE')} grave. Se toca con ${NOTES.RE.finger}. Teclado: Q.`),N('Es la nota más grave hasta ahora: tapa bien los agujeros y sopla muy suave, casi como si suspiraras.')]);
+  await learnNote('RE',[N(`Nota nueva: ${pill('RE')} grave. Se toca con ${NOTES.RE.finger}. Teclado: ${NOTES.RE.key.toUpperCase()}.`),N('Es la nota más grave hasta ahora: tapa bien los agujeros y sopla muy suave, casi como si suspiraras.')]);
   await dialog([N(`Con el ${pill('RE')} las ratas entienden «roed».`),
     N(`<b>Roedoras</b> ${pills(SPELLS.roedoras.notes)}: muerden cuerdas y cadenas. Contra la cadena del rey hacen mucho más que el Enjambre.`)]);
 }
@@ -2289,7 +2289,7 @@ SCENES.push(...C34_SCN.map(x=>x[0]));
   new MutationObserver(()=>{if(e.classList.contains('hidden'))return;const B={c3:'La Monaca delle Ossa',c4:'Las ratas de Venecia'},extra=Object.keys(B).filter(k=>stats[k]&&stats[k].book).map(k=>B[k]+': '+(stats[k].book==='castigo'?(k==='c4'?'obligadas a seguirte.':'castigada.'):(k==='c4'?'libres.':'dijo la verdad.')));
     if(extra.length&&!$('endBook').dataset.c34){$('endBook').dataset.c34=1;$('endBook').textContent+=($('endBook').textContent?' · ':'Libro de las Deudas · ')+extra.join(' · ');}}).observe(e,{attributes:true,attributeFilter:['class']});}C34_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.createElement('option');o.value=i;o.textContent=n.replace('Cap. ','Capítulo ');$('startAt').appendChild(o);});
 // =================== CAPÍTULO 5 · LA FRAGUA DE LAS JAULAS ===================
-// Nota FA (tecla R) y hechizo Contramelodía (FA-LA-DO'): rompe los ataques enemigos marcados con song:true (ver bossFight).
+// Nota FA (tecla J) y hechizo Contramelodía (FA-LA-DO'): rompe los ataques enemigos marcados con song:true (ver bossFight).
 NOTES.FA={label:'FA',pc:5,midi:77,f:698.46,step:1,color:'#8a5cb0',key:'r',finger:'el pulgar, los tres dedos de la mano izquierda y el índice de la derecha'};
 mkPad('FA',false);
 SPELLS.contra={name:'Contramelodía',notes:['FA','LA','DO'],desc:'Rompe su próximo canto.'};
@@ -2362,7 +2362,7 @@ async function c5shift(C){
   await dialog([N('El Proto golpea el suelo con el mazo. Saltan chispas, tablas y clavos.'),
     N('El peto se agrieta. El remache de latón salta y Pulce lo atrapa al vuelo antes de que caiga en la fragua.',{sfx:()=>{C.frag=gt;}})]);
   await wait(1.3);C.frag=null;bell();
-  await learnNote('FA',[N(`Nota nueva: ${pill('FA')}. Se toca con ${NOTES.FA.finger}. Teclado: R.`),N('Es una nota rara: suena un poco torcida, como si no quisiera estar ahí. Por eso sirve para romper la música de otros.')]);
+  await learnNote('FA',[N(`Nota nueva: ${pill('FA')}. Se toca con ${NOTES.FA.finger}. Teclado: ${NOTES.FA.key.toUpperCase()}.`),N('Es una nota rara: suena un poco torcida, como si no quisiera estar ahí. Por eso sirve para romper la música de otros.')]);
   await dialog([N(`<b>Contramelodía</b> ${pills(SPELLS.contra.notes)}: tus ratas chillan a destiempo y rompen el compás del enemigo.`),
     N('Cuando el Proto vaya a cantar, te avisaré. Si tocas la Contramelodía justo antes, su canto no sonará y quedará al descubierto.'),
     L('Il Proto','¿Qué es eso? ¡Eso no es música!')]);
@@ -2450,7 +2450,7 @@ C5_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.cre
   new MutationObserver(()=>{if(e.classList.contains('hidden')||!stats.c5||!stats.c5.book||$('endBook').dataset.c5)return;$('endBook').dataset.c5=1;
     $('endBook').textContent+=($('endBook').textContent?' · ':'Libro de las Deudas · ')+"Il Proto dell'Arsenale: "+(stats.c5.book==='castigo'?'encerrado en su jaula.':'confesó lo de San Clemente.');}).observe(e,{attributes:true,attributeFilter:['class']});}
 // =================== CAPÍTULO 6 · LA DANZA SIN MÚSICA ===================
-// Nota DO grave (tecla Z), hechizos Compás (ritmo de la muleta de Tano) y Gran Coro. Jefa: La Tarantella (Greta, la niña sorda de Hamelin).
+// Nota DO grave (tecla Ñ), hechizos Compás (ritmo de la muleta de Tano) y Gran Coro. Jefa: La Tarantella (Greta, la niña sorda de Hamelin).
 const c6st=()=>(stats.c6=stats.c6||{});
 Object.assign(NOTES,{DO1:{label:'DO',pc:0,midi:72,f:523.25,step:-2,color:'#5a6470',key:'z',finger:'todos los agujeros tapados: el pulgar, los tres dedos de la izquierda y los cuatro de la derecha, meñique incluido'}});
 mkPad('DO1',false);
@@ -2584,7 +2584,7 @@ async function c6shift(C){
     L('La Tarantella','…¿Tobias?'),
     N('En ese instante, Pulce salta a la pandereta y arranca el trozo de flauta de entre las cintas.',{sfx:()=>{C.frag=gt;}})]);
   await wait(1.3);C.frag=null;bell();
-  await learnNote('DO1',[N(`Nota nueva: ${pill('DO1')} grave, la más grave de la flauta. Se toca con ${NOTES.DO1.finger}. Teclado: Z.`),
+  await learnNote('DO1',[N(`Nota nueva: ${pill('DO1')} grave, la más grave de la flauta. Se toca con ${NOTES.DO1.finger}. Teclado: ${NOTES.DO1.key.toUpperCase()}.`),
     N('Si se escapa un pitido, es que algún agujero no está bien tapado. Sopla muy suave y despacio.')]);
   await dialog([N(`El ${pill('DO1')} no se oye solo: hace temblar el suelo. Greta puede sentirlo.`),
     N(`Ya tienes la flauta casi entera. <b>Gran Coro</b> ${pills(SPELLS.coro.notes)}: de la nota más grave a la más aguda, todas las ratas a la vez.`)]);
@@ -3711,9 +3711,9 @@ const ACT_SCN=[
 SCENES.length=0;SCN.length=0;ACT_SCN.forEach(([f,n])=>{SCENES.push(f);SCN.push(n);});
 {const sel=$('startAt');sel.innerHTML='';ACT_SCN.forEach(([f,n],i)=>{const o=document.createElement('option');o.value=i;o.textContent=n.replace('Cap. ','Capítulo ');sel.appendChild(o);});}
 
-// Teclado (modo sin flauta), como un piano en la fila central: A S D F = DO RE MI FA · J K L Ñ = SOL LA SI DO'. RE' agudo en la tecla de al lado de la Ñ.
+// Teclado (modo sin flauta), fila central de agudo a grave (decidido por Oscar 2026-11-23): A S D F = DO' SI LA SOL · J K L Ñ = FA MI RE DO grave. RE' agudo en la tecla de al lado de la Ñ.
 // Se usa e.code para que funcione igual en teclados españoles y de otros idiomas (Ñ = ; en teclado inglés).
-const KEYMAP={DO1:['a','KeyA'],RE:['s','KeyS'],MI:['d','KeyD'],FA:['f','KeyF'],SOL:['j','KeyJ'],LA:['k','KeyK'],SI:['l','KeyL'],DO:['ñ','Semicolon'],RE2:['´','Quote']};
+const KEYMAP={DO:['a','KeyA'],SI:['s','KeyS'],LA:['d','KeyD'],SOL:['f','KeyF'],FA:['j','KeyJ'],MI:['k','KeyK'],RE:['l','KeyL'],DO1:['ñ','Semicolon'],RE2:['´','Quote']};
 for(const [n,[key,code]] of Object.entries(KEYMAP))if(NOTES[n]){NOTES[n].key=key;NOTES[n].code=code;const b=$('pad_'+n),sm=b&&b.querySelector('small');if(sm)sm.textContent='tecla '+key.toUpperCase();}
 const MI=[...document.querySelectorAll('.mi')];let msel=1;
 function selMenu(i){MI.forEach((b,k)=>b.classList.toggle('sel',k===i));msel=i;}
