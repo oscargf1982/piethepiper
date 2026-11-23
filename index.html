@@ -2036,7 +2036,7 @@ async function c3s3(){ // Combate: la Monaca delle Ossa
 }
 async function c3s4(){ // La deuda de la Monaca y el recuerdo
   ensureNotes(['DO','RE2','MI']);if(has('c3_monaca_fin')){still('c3_monaca_fin',{z0:1.0,z1:1.06,dur:40});S.fx=(t,dt)=>drawFog(dt,.3,-120);}else{still('c3_monaca',{z0:1.1,z1:1.0,y0:.35,y1:.3,dur:40});S.fx=()=>{ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,960,540);};}await fade(0,1.2);
-  await dialog([L('La Monaca delle Ossa','Treinta años cantando para que nadie oyera nada. Y ahora oigo yo.'),L('La Monaca delle Ossa','Él me dijo que eran pecadores. Que si se sabía de qué morían, la ciudad ardería.')]);
+  await dialog([L('La Monaca delle Ossa','Desde julio canto para que nadie oiga nada. Desde que trajeron al primero. Y ahora oigo yo.'),L('La Monaca delle Ossa','Él me dijo que eran pecadores. Que si se sabía de qué morían, la ciudad ardería.')]);
   S.fx=null;bookPage(['La Monaca delle Ossa','Un trozo de flauta.','Un registro.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas se abre solo. Otra página escrita con tu letra.')]);
   const c=await choice('','¿Cómo cobras esta deuda?',['Castigarla','Exigir la verdad']);stats.c3.book=c===0?'castigo':'verdad';S.overlay=null;
