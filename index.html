@@ -3256,7 +3256,7 @@ async function a1s1(){ // El pasillo de las celdas: sigilo
   const look=()=>{if(g.gone!=null)return 'away';const q=gt%cyc;return q<3.8?'away':q<4.6?'turn':'watch';};
   const p=walkScene({img:aimg('pr_pasillo','c3_cripta'),y:FY,s:.62,start:110,maxX:905,exitX:905,need:['flauta'],blocked:'Sin tu flauta no vas a ninguna parte.',
     hint:'Las Prigioni Nuove, junto al Palacio Ducal. Avanza cuando el guardia mire a otro lado. Si su farol te apunta, quédate quieto.',
-    extra:(t,dt)=>{pf(t,dt);const W=S.walk,Lk=look();
+    extra:(t,dt)=>{if(!(rats!=null&&gt-rats<5))pf(t,dt);const W=S.walk,Lk=look();
       if(!flute){ctx.fillStyle='#2a1c12';ctx.fillRect(770,392,120,10);ctx.fillRect(780,402,8,70);ctx.fillRect(872,402,8,70);ctx.save();ctx.translate(830,388);ctx.rotate(-.08);ctx.fillStyle='#6b4423';ctx.fillRect(-38,-4,76,7);ctx.fillStyle='#b8a070';ctx.fillRect(-20,-5,4,9);ctx.fillRect(12,-5,4,9);ctx.restore();}
       else{ctx.fillStyle='#2a1c12';ctx.fillRect(770,392,120,10);ctx.fillRect(780,402,8,70);ctx.fillRect(872,402,8,70);}
       ctx.fillStyle='#111';for(let i=0;i<5;i++)ctx.fillRect(338+i*10,462,5,12);
@@ -3272,10 +3272,11 @@ async function a1s1(){ // El pasillo de las celdas: sigilo
     spots:[
       {id:'preso',x:400,y:300,label:'Otra celda',once:true,fn:()=>dialog([N('Detrás de una reja, un hombre flaco te mira sin moverse.'),
         L('Un preso','A ti te trajeron a hombros, de madrugada. Ibas tarareando una nana.'),L('Un preso','Aquí nadie canta. Aquí todos esperan.')])},
-      {id:'reja',x:360,y:440,label:'Desagüe',once:true,fn:async()=>{
+      {id:'reja',x:360,y:440,label:'Desagüe (Pulce)',once:true,fn:async()=>{
         await dialog([N('Pulce araña una rejilla en el suelo. Por debajo corre un desagüe que pasa por detrás del guardia y sale a las escaleras.'),
-          N(`Manda a las ratas por el desagüe con ${pill('SOL')} («seguidme») y llámalas desde lejos con ${pill('SI')} («venid»). Harán ruido en las escaleras.`)]);
-        await waitNotes(['SOL','SI'],'Toca SOL y luego SI',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SOL')}.`)});say('');
+          N('Sin tu flauta no puedes llamar a las ratas. Pero Pulce te mira como si esperara una orden.'),
+          L('El Flautista','(en voz muy baja) Las escaleras, Pulce. Que te oiga.'),
+          N('Pulce se cuela entre los barrotes de la rejilla. Al poco, por el desagüe, empiezan a correr más ratas detrás de ella: no te obedecen a ti, la siguen a ella.')]);
         rats=gt;squeaks(12);await wait(1.4);squeaks(8);
         await dialog([L('El guardia','¿Qué es eso? ¡Ratas en las escaleras! ¡Como suban a las celdas, Morosin nos cuelga!'),N('El guardia baja corriendo con el farol en alto.',{sfx:()=>{g.gone=gt;}})]);
         say('El pasillo está despejado. Busca tu flauta.');}},
