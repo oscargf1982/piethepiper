@@ -1049,7 +1049,7 @@ async function scene0(){
   noise(3,.08,300);await fade(0,2.5);await wait(1);
   await dialog([L('El Flautista','Me debían algo.'),L('El Flautista','Siempre me deben algo.')]);
   await fade(1,1.6);S.fx=null;S.mode='black';
-  S.title={t0:gt,sub:'Venecia. Primavera de 1630. Siete años antes.'};S.fade=0;bell();await wait(4.5);
+  S.title={t0:gt,sub:'Venecia. Primavera de 1630. Siete años antes.'};S.fade=0;S.fadeTo=0;bell();await wait(4.5);
   await dialog([N('Pulsa Espacio, toca el cuadro o el botón «Seguir» para continuar.')]);
   await fade(1,1);S.title=null;
 }
@@ -1157,7 +1157,7 @@ async function scene6(){
   await dialog([N('Entre la multitud se abre paso un médico de la peste. Farol, bastón, incensario.'),L('Il Dottore del Ponte','Basta de trucos, forastero.')]);
   await combatDottore();
   say('');$('hudL').classList.add('hidden');$('hudR').classList.add('hidden');$('spells').classList.add('hidden');
-  await fade(1,.4);musicPlay(null);still('flauta',{z0:1.12,z1:1.0,dur:9});S.fade=0;crack();window.fluteCracked=true;await wait(3.5);
+  await fade(1,.4);musicPlay(null);still('flauta',{z0:1.12,z1:1.0,dur:9});S.fade=0;S.fadeTo=0;crack();window.fluteCracked=true;await wait(3.5);
   await dialog([N('Il Dottore te arranca la flauta y la parte sobre la rodilla.'),L('Il Dottore del Ponte','Sin música no eres nada.'),N('Los trozos se reparten entre los magistrados de la Sanidad, como trofeos contra el brujo de las ratas.')]);
   await wait(2);await fade(1,1.6);
 }
@@ -1196,7 +1196,7 @@ async function scene8(){
   await wait(1.5);
   await dialog([N('En el bolsillo, un cuaderno empapado. El Libro de las Deudas.'),N('Todas las páginas se han borrado con el agua. Menos una, escrita con tu letra.'),L('El Flautista','No sé quién eres.'),L('El Flautista','Pero me debes algo.')]);
   S.overlay=null;await fade(1,1.5);
-  S.mode='black';S.fade=0;await dialog([N('Pulce echa a correr hacia el embarcadero y se para a esperarte. Al otro lado del agua, Cannaregio.'),
+  S.mode='black';S.fade=0;S.fadeTo=0;await dialog([N('Pulce echa a correr hacia el embarcadero y se para a esperarte. Al otro lado del agua, Cannaregio.'),
     N('Desde una ventana iluminada de la orilla, una figura con máscara de pico te ve marchar.'),N('Il Dottore del Ponte.')]);
   await fade(1,1.5);
 }
@@ -1474,7 +1474,7 @@ async function c1s6(){ // Combate
   $('hudL').classList.add('hidden');$('hudR').classList.add('hidden');
 }
 async function c1s7(){ // La carta, el recuerdo y el libro
-  unlockDO();ensureNotes(['RE2']);S.mode='combat1';S.cb=S.cb&&S.cb.kneel?S.cb:{php:50,pmax:50,ehp:0,emax:90,phurt:0,ehurt:0,anim:null,kneel:gt-5,phase:2,state:'end'};S.fade=0;
+  unlockDO();ensureNotes(['RE2']);S.mode='combat1';S.cb=S.cb&&S.cb.kneel?S.cb:{php:50,pmax:50,ehp:0,emax:90,phurt:0,ehurt:0,anim:null,kneel:gt-5,phase:2,state:'end'};S.fade=0;S.fadeTo=0;
   if(has('c1_derrota')){await fade(1,.7);still('c1_derrota',{z0:1.0,z1:1.1,x0:.65,x1:.5,dur:40});await fade(0,1.2);}
   await dialog([L('Il Dottore del Ponte','Yo creía que eras tú. Todos lo creíamos…'),L('Il Dottore del Ponte','Él nos dijo que eras tú.'),N('Del abrigo del médico cae una carta con lacre rojo. La recoges.')]);
   S.overlay=()=>{const im=IMG.carta;const k=Math.min(1,(gt-S.ovT)/1);ctx.save();ctx.globalAlpha=.88*k;ctx.fillStyle='#000';ctx.fillRect(0,0,960,540);ctx.globalAlpha=k;
@@ -1493,7 +1493,7 @@ async function c1s7(){ // La carta, el recuerdo y el libro
   S.caption='Hamelin. Año 1284.';await fade(0,2);bell();await wait(1.5);S.caption=null;
   await dialog([N('El trozo de flauta está caliente. Y de pronto, recuerdas.'),N('Una sala con vigas de madera. Olor a cerveza y a cera. Un hombre gordo con pieles deja una bolsa sobre la mesa.'),
     L('El alcalde de Hamelin','Mil florines si libráis Hamelin de sus ratas. Palabra del consejo.'),N('Una mano con guante rojo coge la bolsa. Es tu mano. No consigues verte la cara.')]);
-  await fade(1,.4);S.fx=null;S.mode='black';S.fade=0;
+  await fade(1,.4);S.fx=null;S.mode='black';S.fade=0;S.fadeTo=0;
   await dialog([L('Una voz de niño, asustada','¿Adónde nos llevas?')]);
   await fade(1,.6);musicPlay('game');
   if(has('c1_derrota'))still('c1_derrota',{z0:1.1,z1:1.0,x0:.5,x1:.6,dur:40});else S.mode='combat1';await fade(0,1);
@@ -1986,7 +1986,7 @@ async function c3s4(){ // La deuda de la Monaca y el recuerdo
     N('La primera piedra te da en la frente. Luego otra. Luego muchas.'),
     N('Desde una ventana, tres niños te miran. Uno de ellos, con muleta, baja corriendo para seguirte. Alguien lo agarra del brazo y lo mete dentro.'),
     N('Y tú no vuelves la cabeza.')],{tint:!has('c3_recuerdo')});
-  S.mode='black';S.fade=0;await dialog([L('El Flautista','No me volví.'),L('El Flautista','¿Por qué no me volví?')]);await fade(1,.6);
+  S.mode='black';S.fade=0;S.fadeTo=0;await dialog([L('El Flautista','No me volví.'),L('El Flautista','¿Por qué no me volví?')]);await fade(1,.6);
 }
 async function c3s5(){ // La crecida: el puente de ratas
   ensureNotes(['DO','RE2','MI']);setMoveUI(true);S.fade=1;const pf=pulceFollow();let raft=null;const t0=gt;
@@ -2098,7 +2098,7 @@ async function c4s3(){ // Combate: Il Re dei Ratti
   musicPlay('game');
 }
 async function c4s4(){ // El libro y el recuerdo
-  ensureNotes(['DO','RE2','MI','RE']);S.mode='black';S.fade=0;
+  ensureNotes(['DO','RE2','MI','RE']);S.mode='black';S.fade=0;S.fadeTo=0;
   bookPage(['Las ratas de Venecia','Me sacaron del agua.','¿Quién debe a quién?']);await wait(1.2);
   await dialog([N('Las ratas del rey no huyen. Se quedan mirándote, esperando una orden.'),
     N('El Libro de las Deudas se abre solo. Por primera vez, la página no es de alguien que te debe algo. Es tuya.')]);
@@ -2113,7 +2113,7 @@ async function c4s4(){ // El libro y el recuerdo
     L('Un concejal, desde la escalera','Limpia los túneles de ratas, músico. Y no mires lo demás.'),
     N('Las ratas corren junto a tus botas. No van hacia los enfermos: huyen de ellos. Como todos.'),
     N('Las ratas no traían la enfermedad. Huían de ella.')]);
-  S.mode='black';S.fade=0;await dialog([L('El Flautista','Como yo.')]);await fade(1,.6);
+  S.mode='black';S.fade=0;S.fadeTo=0;await dialog([L('El Flautista','Como yo.')]);await fade(1,.6);
 }
 async function c4s5(){ // Liberar las jaulas
   ensureNotes(['DO','RE2','MI','RE']);setMoveUI(true);S.fade=1;const pf=pulceFollow();const st=CAGES.map(()=>({}));
@@ -2319,7 +2319,7 @@ async function c5s3(){ // Combate: Il Proto dell'Arsenale
     onShift:c5shift,finale:c5finale,winText:'El mazo cae al suelo. Por primera vez en meses, el Arsenal se queda en silencio.'});
 }
 async function c5s4(){ // El libro y el recuerdo
-  ensureNotes([...C5N,'FA']);S.mode='black';S.fade=0;
+  ensureNotes([...C5N,'FA']);S.mode='black';S.fade=0;S.fadeTo=0;
   bookPage(['Maestro Zorzi, Proto','Forjó mis cadenas.','Cobra en hierro.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas se abre solo, sobre el yunque todavía caliente.')]);
   const c=await choice('','¿Cómo cobras esta deuda?',['Castigarlo','Exigir la verdad']);c5().book=c===0?'castigo':'verdad';S.overlay=null;
@@ -2336,7 +2336,7 @@ async function c5s4(){ // El libro y el recuerdo
     N('Se abren las puertas de las casas donde no hay fiebre. Salen los niños, descalzos, en camisa de dormir. Se ríen.'),
     N('Te siguen por la puerta del este, hacia el campo. Nadie llora. Ninguno mira atrás.'),
     N('Tú sí miras. Tres ventanas encendidas. Pero el recuerdo se corta ahí.')]);
-  S.mode='black';S.fade=0;await dialog([L('El Flautista','No me los llevé para hacerles daño.'),L('El Flautista','Me los llevé para que vivieran.'),
+  S.mode='black';S.fade=0;S.fadeTo=0;await dialog([L('El Flautista','No me los llevé para hacerles daño.'),L('El Flautista','Me los llevé para que vivieran.'),
     N('Hacía mucho que no sentías esto. Alegría.')]);await fade(1,.6);
 }
 async function c5s5(){ // La dársena
@@ -2550,7 +2550,7 @@ async function c6s3(){ // Combate: La Tarantella
     onBreak:C=>{popup('¡Ritmo roto!','#e0b04a',700,160);},onShift:c6shift,finale:c6finale,winText:'Los bailarines se detienen. Greta se queda sentada en el escenario.'});
 }
 async function c6s4(){ // El Libro y el recuerdo
-  ensureNotes(['DO','RE2','MI','RE','DO1']);c6st();S.mode='black';S.fade=0;
+  ensureNotes(['DO','RE2','MI','RE','DO1']);c6st();S.mode='black';S.fade=0;S.fadeTo=0;
   bookPage(['La Tarantella','Hizo bailar a Venecia','para no quedarse sola.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas se abre solo. Debajo de «La Tarantella» hay otro nombre, tachado, escrito con tu letra: Greta.')]);
   const c=await choice('','¿Cómo cobras esta deuda?',['Castigarla','Exigir la verdad']);stats.c6.book=c===0?'castigo':'verdad';S.overlay=null;
@@ -2570,7 +2570,7 @@ async function c6s4(){ // El Libro y el recuerdo
     N('Le das una figurita de madera. «Para que nunca olvides el camino de vuelta».'),
     N('Y le enseñas una canción de cuna, para que no tenga miedo mientras espera. Tócala con él.')]);
   // la canción, ahora como recuerdo
-  S.mode='black';S.fade=0;const MEL=['SOL','LA','SI','LA','SOL'];musicPlay('cuna');
+  S.mode='black';S.fade=0;S.fadeTo=0;const MEL=['SOL','LA','SI','LA','SOL'];musicPlay('cuna');
   say('La canción de cuna: '+pills(MEL));await waitNotes(MEL,'La canción de cuna',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SOL')}.`)});say('');
   await dialog([L('El niño de la muleta','Me llamo Tobias. No te olvides.'),N('El niño levanta la cara hacia la luz del farol.'),N('Conoces esa cara.')]);
   await fade(1,.6);musicPlay('game');
@@ -2815,7 +2815,7 @@ async function c7s5(){ // El recuerdo y la deuda de Lorenz
     N('Alguien le tapa la boca. La flecha de un arquero se clava a un palmo de tus pies.'),
     N('Te das la vuelta. Y mientras te alejas, juras en voz alta: «No descansaré hasta que paguéis».'),
     N('Las ratas del campo repiten tu juramento. Una y otra vez. Y ya no dejan de repetirlo.')],{tint:!has('c7_recuerdo')});
-  S.mode='black';S.fade=0;
+  S.mode='black';S.fade=0;S.fadeTo=0;
   await dialog([L('El Flautista','Volví. Volví a por ellos.'),
     L('El Flautista','Y la maldición no me la echó nadie. Nació de mí. De mi rencor. Y los até a ellos conmigo.'),
     N('Hacía mucho que no sentías esto. Culpa.')]);
@@ -3067,7 +3067,7 @@ async function c8s3(){ // Combate: Morosin y la Sombra de la Deuda
 }
 const ENDS8={verdad:'La deuda pagada',romper:'Romper el libro',cobrar:'Cobrar la deuda'};
 async function c8s4(){ // La última página
-  c8notes();c8st();S.mode='black';S.fade=0;
+  c8notes();c8st();S.mode='black';S.fade=0;S.fadeTo=0;
   bookPage(['Alvise Morosin','Mil ducados','y la palabra de Venecia.']);await wait(1.2);
   const P8=[['c1','Il Dottore del Ponte'],['c2','Los Guardianes'],['c3','La Monaca delle Ossa'],['c4','Las ratas de Venecia'],['c5',"Il Proto dell'Arsenale"],['c6','La Tarantella'],['c7','Il Priore del Lazzaretto']];
   const seen=P8.filter(([k])=>c8b(k));
@@ -3211,13 +3211,18 @@ async function scene6b(){
   await dialog([N('De la sombra de los soportales sale un médico de la peste. Farol, bastón, incensario.'),L('Il Dottore del Ponte','Basta de trucos, forastero.')]);
   await combatDottore();
   say('');$('hudL').classList.add('hidden');$('hudR').classList.add('hidden');$('spells').classList.add('hidden');
-  await fade(1,.4);musicPlay(null);S.mode='black';S.fx=null;S.fade=0;window.fluteCracked=true;
+  await fade(1,.4);musicPlay(null);S.fx=null;window.fluteCracked=true;
+  // Imagen 1: lo sujetan y le dan la triaca (si aún no existe, pantalla negra)
+  if(has('pr_triaca')){still('pr_triaca',{z0:1.0,z1:1.1,x0:.5,x1:.45,dur:14});}else S.mode='black';await fade(0,.6);
   await dialog([N('Te sujetan entre cuatro. Il Dottore destapa un frasco y te lo mete entre los dientes.'),
     L('Il Dottore del Ponte','Triaca. La mejor medicina de Venecia. Bebed, maestro: os sentará bien.'),
-    N('Sabe a miel y, debajo, a algo muy amargo. Mandrágora. Beleño. Las caras se alargan como velas derretidas.'),
-    N('Lo último que ves es a Morosin cogiendo tu flauta.'),
+    N('Sabe a miel y, debajo, a algo muy amargo. Mandrágora. Beleño. Las caras se alargan como velas derretidas.')]);
+  // Imagen 2: visión drogada, Morosin coge la flauta (con ondulación de mareo)
+  await fade(1,.5);if(has('pr_morosin_flauta')){still('pr_morosin_flauta',{z0:1.08,z1:1.0,dur:12});S.fx=t=>{ctx.fillStyle=`rgba(40,60,20,${.12+.08*Math.sin(t*1.7)})`;ctx.fillRect(0,0,960,540);};}else S.mode='black';await fade(0,.8);
+  await dialog([N('Lo último que ves es a Morosin cogiendo tu flauta.'),
     L('Alvise Morosin','Desmontadla. Que cada pieza la guarde uno de los nuestros. Que no vuelva a sonar nunca.')]);
-  crack();await wait(2);await fade(1,1.6);
+  // La flauta se rompe: imagen de la flauta, crujido, y se queda en pantalla
+  await fade(1,.4);S.fx=null;still('flauta',{z0:1.12,z1:1.0,dur:9});await fade(0,.35);crack();await wait(4);await fade(1,1.6);
 }
 async function scene7b(){
   still(aimg('pr_celda','despertar'),{z0:1.12,z1:1.0,dur:16});S.fx=()=>{ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,960,540);};await fade(0,2.5);
@@ -3237,6 +3242,7 @@ async function a1s0(){ // Despertar en la celda
     N('En el bolsillo, un cuaderno de cuero. Todas las páginas están en blanco menos una, escrita con tu letra.')]);
   bookPage(['Alvise Morosin','1.000 ducados','Una promesa.']);await wait(1.5);
   await dialog([L('El Flautista','No sé quién eres.'),L('El Flautista','Pero me debes algo.')]);S.overlay=null;
+  if(has('pr_pulce')){await fade(1,.5);still('pr_pulce',{z0:1.1,z1:1.0,x0:.45,x1:.5,dur:30});await fade(0,.8);}
   await dialog([N('Algo se mueve en la paja. Una rata pequeña con la oreja mordida te olfatea la mano.'),N('Te muerde un dedo.'),
     L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.'),
     N('Pulce deja caer algo en la paja: una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),
@@ -3389,7 +3395,7 @@ async function a1campanas(){ // Cap. IV: Morosin empareda las cloacas; el voto d
   await fade(1,1.2);
 }
 async function a1siete(){ // Siete años bajo Venecia: las ratas lo esconden y él se fortalece
-  S.mode='black';S.fade=0;musicPlay('game');
+  S.mode='black';S.fade=0;S.fadeTo=0;musicPlay('game');
   S.title={t0:gt,sub:'Siete años bajo Venecia'};bell();await wait(4);await fade(1,1);S.title=null;
   still(aimg('c4_cloaca','c4_nido_c'),{z0:1.0,z1:1.1,x0:.3,x1:.6,dur:60});S.fx=t=>{ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(0,0,960,540);};await fade(0,1.5);
   await dialog([N('No te mueres de hambre. No te mueres de frío. No puedes morir mientras te deban algo.'),
@@ -3408,7 +3414,7 @@ async function a1siete(){ // Siete años bajo Venecia: las ratas lo esconden y �
   await fade(1,1.2);S.fx=null;
 }
 async function a1opera(){ // Carnaval de 1637: las obras del San Cassiano rompen el muro
-  S.mode='black';S.fade=0;musicPlay(null);
+  S.mode='black';S.fade=0;S.fadeTo=0;musicPlay(null);
   S.title={t0:gt,sub:'Venecia. Carnaval de 1637. Siete años después.'};bell();await wait(4.5);await fade(1,1);S.title=null;
   still(aimg('c4_cloaca','c4_nido_c'),{z0:1.1,z1:1.0,dur:30});let hit=0;S.fx=t=>{ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,0,960,540);
     if(hit){ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(700,200,10,700,200,260*hit);g.addColorStop(0,'rgba(255,220,150,.5)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);ctx.restore();}};
@@ -3485,7 +3491,7 @@ async function a1acusa(){ // La acusación delante del público de la ópera, y 
 // ---------- ACTO II · EL REGRESO (1653) ----------
 async function a2s0(){ // Sant'Ariano, dieciséis años después
   await chapterTitle('ACTO II','El regreso · 1653');
-  S.mode='black';S.title={t0:gt,sub:'Venecia. Carnaval de 1653. Dieciséis años después.'};S.fade=0;bell();await wait(4.5);await fade(1,1);S.title=null;
+  S.mode='black';S.title={t0:gt,sub:'Venecia. Carnaval de 1653. Dieciséis años después.'};S.fade=0;S.fadeTo=0;bell();await wait(4.5);await fade(1,1);S.title=null;
   still('despertar',{z0:1.15,z1:1.0,x0:.35,x1:.5,dur:12});await fade(0,2.5);
   await dialog([N("Amanecer gris. Sant'Ariano, la isla donde Venecia amontona los huesos de sus muertos."),
     N('Las ratas te han sacado del agua. Las cadenas se han oxidado hasta romperse.'),
@@ -3509,7 +3515,7 @@ async function a2s0(){ // Sant'Ariano, dieciséis años después
   bookPage(['Alvise Morosin','1.000 ducados','Una promesa.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas está hinchado de agua, pero ninguna página se ha borrado.'),L('El Flautista','Todavía me debes algo.')]);
   S.overlay=null;await fade(1,1.2);
-  S.mode='black';S.fade=0;await dialog([N('Al otro lado del agua, Venecia suena a tambores y a panderetas. Es carnaval.')]);
+  S.mode='black';S.fade=0;S.fadeTo=0;await dialog([N('Al otro lado del agua, Venecia suena a tambores y a panderetas. Es carnaval.')]);
   await fade(1,1.2);
 }
 async function a2s1(){ // Venecia en carnaval: todos van disfrazados de ti
