@@ -1384,7 +1384,7 @@ async function c1s1(){ // Fondamenta de Cannaregio
         const lx=med.x+(med.face<0?-22:22),ly=FY-45,fl=.7+.3*Math.sin(t*11),rg=ctx.createRadialGradient(lx,ly,2,lx,ly,40);rg.addColorStop(0,`rgba(255,180,80,${.3*fl})`);rg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=rg;ctx.fillRect(lx-40,ly-40,80,80);}},
     spots:[
       {id:'bando',x:R?95:158,y:R?278:245,label:'Bando nuevo',once:true,fn:()=>dialog([L('Bando de la Sanità','«Mientras dure el contagio, se prohíbe tocar música en calles, puentes y fondamenta.»'),L('El Flautista','Venecia tiene miedo hasta de las canciones.')])},
-      {id:'voces',x:R?360:470,auto:true,r:30,fn:()=>dialog([L('Un médico, al otro lado del canal','Il Dottore jura que lo vio pasar en una barca bajo el Puente de los Suspiros. Al amanecer.'),L('Otro médico','Nadie sale de las Prigioni Nuove.'),L('Un médico','Este sí. Por eso ha mandado quemar todas las ratas del barrio.')])},
+      {id:'voces',x:R?360:470,auto:true,r:30,fn:()=>dialog([L('Un médico, al otro lado del canal','Il Dottore jura que lo vio pasar en una barca bajo el puente cerrado de las prigioni. Al amanecer.'),L('Otro médico','Nadie sale de las Prigioni Nuove.'),L('Un médico','Este sí. Por eso ha mandado quemar todas las ratas del barrio.')])},
       {id:'medico',x:R?700:820,wx:R?620:720,y:FY-185,label:'Médico de guardia',once:true,fn:async()=>{
         await dialog([N('Un médico del pico vigila el final del muelle con un farol. No te ha visto todavía.'),N(`Llama a las ratas de los sacos con ${pill('SI')} («venid») y mándalas lejos con ${pill('SOL')} («seguidme»).`)]);
         await waitNotes(['SI','SOL'],'Toca SI y luego SOL',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SI')}.`)});say('');
