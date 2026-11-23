@@ -1987,6 +1987,26 @@ async function c3shift(C){
   await dialog([N(`Con el ${pill('MI')} las ratas entienden una orden nueva: «al agua».`),
     N(`<b>Marea</b> ${pills(SPELLS.marea.notes)}: las nadadoras atacan desde el suelo inundado y te quitan la confusión del salmo.`)]);
 }
+// Cripta de San Zaccaria: velas que titilan y escombros del techo al recibir un golpe
+const CRYPT_C=[[63,297,38],[258,293,46],[276,287,46],[287,295,40],[360,320,30],[421,241,34],[431,238,34],[543,241,34],[552,238,34],[612,312,30],[678,295,46],[689,285,46],[703,293,40],[893,298,38]];
+const CRYPT_D={bits:[],last:0};
+function cryptFx(t,dt,oy){const C=S.cb||{},h=Math.max(C.phurt||0,C.ehurt||0),D=CRYPT_D;
+  if(h>.9&&D.last<=.9){for(let i=0;i<22;i++){const x=120+Math.random()*720;D.bits.push({x,y:oy+10+Math.random()*50,vx:(Math.random()-.5)*30,vy:Math.random()*40,r:2+Math.random()*3,rot:Math.random()*6,vr:(Math.random()-.5)*8,stop:oy+370+Math.random()*130,d:0});}
+    for(let i=0;i<5;i++)D.bits.push({dust:1,x:150+Math.random()*660,y:oy+20+Math.random()*40,r:16+Math.random()*24,a:.55,vy:22});}
+  D.last=h;
+  const tt=t*(1+h*3);ctx.save();
+  for(const c of CRYPT_C){const fl=flick(tt,c[0]*.37);const a=(.22+h*.38)*(h>0?.6+.6*Math.abs(Math.sin(tt*17+c[0])):1);
+    torchGlow(tt,c[0],c[1]+oy,c[2]*(1+h*.5),a);
+    ctx.globalCompositeOperation='lighter';ctx.fillStyle=`rgba(255,210,120,${.25*fl})`;ctx.beginPath();ctx.ellipse(c[0],c[1]+oy,1.6,3.2,0,0,7);ctx.fill();ctx.globalCompositeOperation='source-over';
+    // reflejo en el agua
+    const ry=2*(360+oy)-(c[1]+oy)+30;if(ry<540){ctx.globalCompositeOperation='lighter';ctx.fillStyle=`rgba(255,160,70,${.05*fl*(1+h)})`;ctx.fillRect(c[0]-4,360+oy,8,Math.max(0,ry-(360+oy)));ctx.globalCompositeOperation='source-over';}}
+  if(h>0){ctx.fillStyle=`rgba(0,0,0,${h*.12*(.5+.5*Math.sin(tt*23))})`;ctx.fillRect(0,0,960,540);}
+  D.bits=D.bits.filter(b=>{if(b.dust){b.y+=b.vy*dt;b.r+=dt*14;b.a-=dt*.25;if(b.a<=0)return false;
+      const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);g.addColorStop(0,`rgba(185,170,140,${b.a})`);g.addColorStop(1,'rgba(185,170,140,0)');ctx.fillStyle=g;ctx.fillRect(b.x-b.r,b.y-b.r,b.r*2,b.r*2);return true;}
+    if(b.d){b.d+=dt;const k=b.d/.6;if(k>=1)return false;ctx.strokeStyle=`rgba(200,190,160,${.5*(1-k)})`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(b.x,b.stop,3+k*14,1+k*4,0,0,7);ctx.stroke();return true;}
+    b.vy+=520*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.rot+=b.vr*dt;if(b.y>=b.stop){b.d=.001;return true;}
+    ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.rot);ctx.fillStyle='#6f6553';ctx.fillRect(-b.r,-b.r*.7,b.r*2,b.r*1.4);ctx.fillStyle='#a99b7c';ctx.fillRect(-b.r,-b.r*.7,b.r*2,b.r*.5);ctx.restore();return true;});
+  ctx.restore();}
 async function c3s3(){ // Combate: la Monaca delle Ossa
   ensureNotes(['DO','RE2']);S.fade=1;musicPlay('monaca');
   const COY=()=>document.body.classList.contains('staffOut')?0:-62;
@@ -1994,7 +2014,7 @@ async function c3s3(){ // Combate: la Monaca delle Ossa
     sp1:['enjambre','muralla','ojos','eco'],sp2:['enjambre','muralla','ojos','eco','marea'],
     atk1:[ATK3.salmo,ATK3.candelabro,ATK3.rosario],atk2:[ATK3.coro,ATK3.candelabro,ATK3.salmo,ATK3.rosario],
     weakText:'Las exploradoras ven que, cuando toma aire, el canto se le rompe.',
-    bg:(t,dt)=>{drawCover(IMG.c3_cripta_c,{oy:COY()});drawFog(dt,.45,-120+COY());},
+    bg:(t,dt)=>{const oy=COY();drawCover(IMG.c3_cripta_c,{oy});cryptFx(t,dt,oy);drawFog(dt,.45,-120+oy);},
     drawFoe:(x,y,o)=>{if(o.kneel){sprite('monaca',x,y+6,{s:.85,sy:.7,filter:'brightness(.5)'});return;}
       const pose=o.C&&o.C.cur&&(o.C.echo||o.atk)?'monaca_'+o.C.cur.id:null;
       if(pose&&ready(SPR[pose])){sprite(pose,x,y,{s:.85,alpha:o.alpha,flash:o.flash,sy:1+Math.sin(o.t*3)*.01});return;}
