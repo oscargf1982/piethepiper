@@ -1049,7 +1049,7 @@ async function scene0(){
   noise(3,.08,300);await fade(0,2.5);await wait(1);
   await dialog([L('El Flautista','Me debían algo.'),L('El Flautista','Siempre me deben algo.')]);
   await fade(1,1.6);S.fx=null;S.mode='black';
-  S.title={t0:gt,sub:'Venecia. Primavera de 1630. Meses antes.'};S.fade=0;bell();await wait(4.5);
+  S.title={t0:gt,sub:'Venecia. Primavera de 1630. Siete años antes.'};S.fade=0;bell();await wait(4.5);
   await dialog([N('Pulsa Espacio, toca el cuadro o el botón «Seguir» para continuar.')]);
   await fade(1,1);S.title=null;
 }
@@ -1182,7 +1182,7 @@ async function scene8(){
     spots:[
       {id:'pulce',x:330,at:()=>({x:pulce.x,y:S.walk.y-58}),r:110,label:'Rata',once:true,fn:()=>dialog([N('Una rata pequeña con la oreja mordida se acerca y te olfatea la mano.'),N('Te muerde un dedo.'),L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.')])},
       {id:'cadenas',x:420,y:365,label:'Cadenas',once:true,fn:()=>dialog([N('Cadenas rotas, roídas. ¿Quién te las puso? ¿Por qué?')])},
-      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos, una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),N('Al tocarla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('No entiendes nada. Pero la guardas.')]);musicPlay('game');}},
+      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos brilla algo: la moneda del niño con muleta. Se te ha caído del bolsillo al salir del agua.'),N('Al tocarla, otra vez la voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('No entiendes nada. Pero la guardas.')]);musicPlay('game');}},
       {id:'charco',x:770,y:450,label:'Charco',once:true,fn:async()=>{S.walk.redEyes=true;await dialog([N('En el agua quieta, tu reflejo. Tus ojos brillan rojos.'),N('No recuerdas tu nombre. Ni esta ciudad. Ni nada.')]);}}
     ]});
   await fade(0,1);await p;setMoveUI(false);say('');
@@ -1379,7 +1379,7 @@ async function c1s1(){ // Fondamenta de Cannaregio
         const lx=med.x+(med.face<0?-22:22),ly=FY-45,fl=.7+.3*Math.sin(t*11),rg=ctx.createRadialGradient(lx,ly,2,lx,ly,40);rg.addColorStop(0,`rgba(255,180,80,${.3*fl})`);rg.addColorStop(1,'rgba(255,180,80,0)');ctx.fillStyle=rg;ctx.fillRect(lx-40,ly-40,80,80);}},
     spots:[
       {id:'bando',x:R?95:158,y:R?278:245,label:'Bando nuevo',once:true,fn:()=>dialog([L('Bando de la Sanità','«Mientras dure el contagio, se prohíbe tocar música en calles, puentes y fondamenta.»'),L('El Flautista','Venecia tiene miedo hasta de las canciones.')])},
-      {id:'voces',x:R?360:470,auto:true,r:30,fn:()=>dialog([L('Un médico, al otro lado del canal','Il Dottore jura que lo vio salir del agua. Desde su ventana, al amanecer.'),L('Otro médico','Los ahogados no salen del agua.'),L('Un médico','Este sí. Por eso ha mandado quemar todas las ratas del barrio.')])},
+      {id:'voces',x:R?360:470,auto:true,r:30,fn:()=>dialog([L('Un médico, al otro lado del canal','Il Dottore jura que lo vio pasar en una barca bajo el Puente de los Suspiros. Al amanecer.'),L('Otro médico','Nadie sale de las Prigioni Nuove.'),L('Un médico','Este sí. Por eso ha mandado quemar todas las ratas del barrio.')])},
       {id:'medico',x:R?700:820,wx:R?620:720,y:FY-185,label:'Médico de guardia',once:true,fn:async()=>{
         await dialog([N('Un médico del pico vigila el final del muelle con un farol. No te ha visto todavía.'),N(`Llama a las ratas de los sacos con ${pill('SI')} («venid») y mándalas lejos con ${pill('SOL')} («seguidme»).`)]);
         await waitNotes(['SI','SOL'],'Toca SI y luego SOL',{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SI')}.`)});say('');
@@ -1403,7 +1403,7 @@ async function c1s2(){ // El puente de Tano: dúo
   await dialog([L('Tano','¿Ves? Te la sabes. Es la canción de mi abuela.'),N('Tano mira hacia una ventana con la contraventana cerrada.'),
     L('Tano','Está enferma. Fiebre. Los médicos se han llevado las medicinas de todo el barrio a la casa de cuarentena del Rio della Misericordia. Dicen que para repartirlas.'),
     L('Tano','No reparten nada. Y el que manda allí es Il Dottore del Ponte.')]);
-  const c=await choice('','En el bolsillo llevas la moneda de Sant\'Ariano.',['Enseñarle la moneda','Guardarla']);stats.c1.coin=c===0;
+  const c=await choice('','En el bolsillo llevas la moneda que te trajo Pulce a la celda.',['Enseñarle la moneda','Guardarla']);stats.c1.coin=c===0;
   if(c===0)await dialog([N('Tano coge la moneda y la gira hacia la luz. El niño grabado lleva una muleta.'),L('Tano','Qué rara. El niño se parece a mí…'),L('Tano','Bah. Todos los cojos nos parecemos.'),N('Te la devuelve deprisa. Durante un rato no dice nada.')]);
   else await dialog([N('Dejas la moneda donde está. Por alguna razón, no quieres que la vea todavía.')]);
   await dialog([L('Tano','Ven. Mi abuela querrá conocerte. Le gusta la gente que se sabe su canción.')]);
@@ -1893,7 +1893,7 @@ async function c3carpintero(){
     while(!ok){say('Las ratas chillan: '+pills(v.m));wantNotes(v.m);const p=await perform(v.m);wantNotes([]);ok=p.notes.filter(n=>n.j&&n.j!=='fallo').length>=2;scorePerf(p);
       if(!ok){say('La voz se rompe en chillidos. Prueba otra vez.');await wait(1.2);}}
     say('');squeaks(4);await dialog(v.t);}
-  S.mode=keep;await dialog([L('El Flautista','Marzo. Mucho antes de que yo llegara con mis ratas.'),N('Venecia lo supo desde el principio. Y alguien escribió «ahogado».')]);
+  S.mode=keep;await dialog([L('El Flautista','La peste vino de San Clemente, con el embajador. No con mis ratas.'),N('Venecia lo supo desde el principio. Y alguien escribió «fiebre de los pantanos».')]);
 }
 function drawCoffin(t){const x=520,y=452+Math.sin(t*1.3)*1.5;ctx.save();ctx.translate(x,y);ctx.scale(1.35,1.35);ctx.translate(-x,-y);
   const body=(yy,sc)=>{ctx.beginPath();ctx.moveTo(x-70,yy);ctx.lineTo(x-58,yy-22*sc);ctx.lineTo(x+46,yy-26*sc);ctx.lineTo(x+72,yy-14*sc);ctx.lineTo(x+70,yy);ctx.closePath();};
@@ -2006,8 +2006,8 @@ async function c3s5(){ // La crecida: el puente de ratas
   // Arriba, con Ester
   still('c3_pozo',{z0:1.06,z1:1.0,dur:40});S.fx=pozoFx;await fade(0,1.2);
   await dialog([L('Ester','¡Estás empapado! ¿Y Pulce?'),N('Pulce asoma la cabeza de tu bolsa y estornuda.'),
-    ...(stats.c3.registro?[N('Le das el registro de difuntos. Ester lo lee a la luz del farol y se le va el color de la cara.'),L('Ester','«Ahogado». Con esto y con el cuaderno de mi maestro, ya no es nuestra palabra contra la suya.')]
-      :[L('El Flautista','El carpintero murió de peste en marzo. Morosin mandó apuntar que se había ahogado.'),L('Ester','Lo sabemos tú y yo. Nos hace falta que lo sepa toda Venecia.')]),
+    ...(stats.c3.registro?[N('Le das el registro de difuntos. Ester lo lee a la luz del farol y se le va el color de la cara.'),L('Ester','«Fiebre de los pantanos». Con esto y con el cuaderno de mi maestro, ya no es nuestra palabra contra la suya.')]
+      :[L('El Flautista','El carpintero murió de peste en julio. Morosin mandó apuntar fiebre de los pantanos.'),L('Ester','Lo sabemos tú y yo. Nos hace falta que lo sepa toda Venecia.')]),
     L('Ester','Mientras estabas abajo han pasado ratas por la plaza. Cientos. Todas en la misma dirección: hacia San Marcos.'),
     N('Pulce tiembla dentro de la bolsa.'),
     L('Ester','En el Ghetto cuentan que bajo la plaza vive un rey de las ratas. Que los médicos lo encadenaron allí abajo para que acudieran todas las demás… y quemarlas juntas.'),
@@ -2028,7 +2028,7 @@ async function c4s0(){ // La Piazzetta
   ensureNotes(['DO','RE2','MI']);await chapterTitle('CAPÍTULO IV','El rey asustado');
   still('c4_piazza',{z0:1.0,z1:1.08,dur:40});S.fx=(t,dt)=>drawFog(dt,.6,-120);await fade(0,1.2);
   await dialog([N('La Piazzetta de San Marcos, de madrugada. Toque de queda. Dos médicos del pico hacen la ronda con sus faroles.'),
-    N('Aquí te acusaron delante de todos. Las columnas siguen en su sitio, como si nada.'),
+    N('Aquí te prendieron la noche que fuiste a cobrar. Las columnas siguen en su sitio, como si nada.'),
     N('Entre las losas hay una rejilla de hierro. De abajo sube un ruido sordo: miles de patas.'),
     N(`Las ratas pueden levantar la rejilla desde abajo si se apilan. Toca <b>Muralla</b> ${pills(SPELLS.muralla.notes)}.`)]);
   await waitNotes(SPELLS.muralla.notes,"Toca SOL, SOL y DO'",{onWrong:n=>say(`Eso es un ${pill(n)}. Empieza por ${pill('SOL')}.`)});say('');
@@ -2271,7 +2271,7 @@ async function c5s2(){ // La fragua
   ensureNotes(C5N);still('c5_fragua',{z0:1.0,z1:1.04,dur:40});
   S.fx=t=>{hammers(t,1.4);sprite('proto_frente',700,335,{s:.9,sy:1+Math.sin(t*1.4)*.006});forgeGlow(t,690,180,34,.9);sparks(t,190,230);sparks(t+.5,770,230);};await fade(0,1.2);
   await dialog([N('La fragua del Arsenal. Dos hornos encendidos como bocas, cadenas colgando del techo y, en el centro, un hombre enorme metido en una armadura de tablones de barco.'),
-    N('Il Proto dell\'Arsenale. Maestro Alvise. Canta mientras golpea el yunque, y todo el Arsenal golpea con él.'),
+    N('Il Proto dell\'Arsenale. Maestro Zorzi. Canta mientras golpea el yunque, y todo el Arsenal golpea con él.'),
     N('Deja de cantar. Los martillos se callan de golpe.'),
     L('Il Proto','Te conozco. Yo forjé tus cadenas. Buen hierro, de ancla. No deberías estar aquí.'),
     L('El Flautista','Eso me dicen todos.'),
@@ -2320,14 +2320,14 @@ async function c5s3(){ // Combate: Il Proto dell'Arsenale
 }
 async function c5s4(){ // El libro y el recuerdo
   ensureNotes([...C5N,'FA']);S.mode='black';S.fade=0;
-  bookPage(['Maestro Alvise, Proto','Forjó mis cadenas.','Cobra en hierro.']);await wait(1.2);
+  bookPage(['Maestro Zorzi, Proto','Forjó mis cadenas.','Cobra en hierro.']);await wait(1.2);
   await dialog([N('El Libro de las Deudas se abre solo, sobre el yunque todavía caliente.')]);
   const c=await choice('','¿Cómo cobras esta deuda?',['Castigarlo','Exigir la verdad']);c5().book=c===0?'castigo':'verdad';S.overlay=null;
   if(c===0)await dialog([N('Tocas. Las ratas empujan una de sus jaulas nuevas y la cierran con él dentro.',{sfx:()=>squeaks(14)}),
       L('Il Proto','¡Yo solo hacía lo que me mandaban! ¡Yo solo hacía las puertas!'),
       N('Lo dejas allí, entre sus martillos. La mancha negra te cubre ya la muñeca.'),L('El Flautista',(MARKW[marks5()-1]||'Otra')+'.')]);
   else await dialog([L('El Flautista','¿Quién te encargó mis cadenas?'),
-      L('Il Proto','Morosin. La víspera de que te acusaran en la Piazzetta. Ya sabía cómo iba a acabar.'),
+      L('Il Proto','Morosin. La víspera del estreno en el San Cassiano. Ya sabía cómo iba a acabar.'),
       L('Il Proto','Y ahora me ha encargado otras dos cosas: el puente de barcas de la Festa della Salute. Y una jaula de hierro, grande como un hombre. Para el veintiuno de noviembre.'),
       L('Il Proto','Y hay otra cosa. Cada noche sale de aquí una barca sin nombre hacia San Clemente. Va llena. Siempre vuelve vacía.'),
       N('El Proto se levanta, coge un cubo de agua y lo vuelca en la fragua. El vapor lo llena todo.'),N('En todo el Arsenal, los martillos se callan.')]);
@@ -2580,7 +2580,7 @@ async function c6s5(){ // Tobias
   still(c6img('c6_piazza','c4_piazza'),{z0:1.1,z1:1.0,dur:30});S.fx=()=>{ctx.fillStyle='rgba(255,180,140,.14)';ctx.fillRect(0,0,960,540);};
   await fade(0,1.2);musicPlay('cuna');
   await dialog([N('Amanece. Escondidos en un portal de la plaza, oís al pregonero leer desde la Pietra del Bando:'),
-    L('Un pregonero','«El brujo de las ratas ha vuelto y ha quemado el teatro de San Luca con los venecianos dentro. El Procurador Morosin ofrece doscientos ducados por su cabeza».'),
+    L('Un pregonero','«El Flautista Carmesí ha vuelto y ha quemado el teatro de San Luca con los venecianos dentro. El Procurador Morosin ofrece doscientos ducados por su cabeza».'),
     N('Por la plaza corren hojas impresas con un grabado: un hombre de rojo entre las llamas. Se venden a dos sueldos.'),
     N('Los que salieron vivos gracias a tus ratas lo cuentan al revés: «Las ratas nos atacaron en las puertas».'),
     L('Ester','Es lo mismo que en el treinta. La misma mentira. Y esta vez la hemos visto nacer.'),
@@ -2848,7 +2848,7 @@ async function c7s6(){ // Amanecer en la laguna
     ...(v?[N('Lorenz va sentado en la proa, sin máscara, con la cara al sol. Greta le ha cogido la mano. Tano toca el silbato, muy bajito.')]
       :[N('Nadie habla. En la proa, Greta mira la estela de la barca de Lorenz, que hace rato que ha desaparecido.')]),
     N('Al fondo, sobre el Gran Canal, se levanta una basílica a medio hacer: muros blancos, andamios enormes y una grúa. Todavía no tiene cúpula.'),
-    L('El barquero','La basílica que prometió el Senado en el treinta, para que se fuera la peste. Santa Maria della Salute. Lleva veintitrés años en obras.'),
+    L('El barquero','La basílica que prometió el Senado en el treinta, para que se fuera la peste. Santa Maria della Salute. Lleva veintidós años en obras.'),
     L('El barquero','Esta noche es la Festa della Salute. El Procurador Morosin la preside, delante del Senado. Hay un puente de barcas hecho por el Arsenal. Va a ir toda Venecia.'),
     ...(pr&&v?[L('Ester','Tenemos el registro con su firma. Y tenemos a Lorenz. Esta vez la verdad tiene testigos.')]
       :pr?[L('Ester','Tenemos el registro con su firma. Es poco, pero es tinta.')]
@@ -2908,9 +2908,9 @@ async function c8s0(){ // El Gran Canal
   still(c8img('c8_canal','laguna'),{z0:1.0,z1:1.1,dur:40});S.fx=(t,dt)=>drawFog(dt,.7,-60);await fade(0,1.2);
   const {pr}=ledger8();
   await dialog([N('Gran Canal. Anochece. La barca avanza despacio entre góndolas negras.'),
-    N('Al otro lado del agua, la basílica prometida lleva veintitrés años en obras: muros a medio subir, sin cúpula, y un andamio enorme lleno de antorchas. Por el puente de barcas cruza media Venecia con velas.'),
+    N('Al otro lado del agua, la basílica prometida lleva veintidós años en obras: muros a medio subir, sin cúpula, y un andamio enorme lleno de antorchas. Por el puente de barcas cruza media Venecia con velas.'),
     N('En las góndolas espera el Senado de Venecia, con togas negras y pañuelos en la cara.'),
-    L('Un pregonero','¡Hoy es la Festa della Salute! ¡Y esta noche arderá el brujo de las ratas, que trajo la peste y quemó San Luca!'),
+    L('Un pregonero','¡Hoy es la Festa della Salute! ¡Y esta noche arderá el Flautista Carmesí, que trajo la peste y quemó San Luca!'),
     N('En lo alto del andamio cuelga un muñeco de paja con una capucha roja.'),
     L('Tano','Van a quemarte. Bueno, a un muñeco que se parece a ti.'),
     L('El Flautista','No sería la primera vez que una ciudad quema lo que no entiende.'),
@@ -3158,7 +3158,7 @@ async function c8s6(){ // Epílogo
     await dialog([N('La consagración de Santa Maria della Salute. Un puente de barcas cruza el Gran Canal hasta la basílica terminada, blanca, con su cúpula enorme.'),
       N('Miles de venecianos cruzan con velas, como cada 21 de noviembre desde que se fue la peste.'),
       N('En el puente, un hombre de cuarenta y seis años, con capucha roja y una muleta, toca una canción de cuna con una flauta de madera y latón.'),
-      N('Una rata con la oreja mordida, nieta de otra rata con la oreja mordida, lo escucha desde la barandilla.'),
+      N('Pulce, la misma rata con la oreja mordida, sin un pelo blanco, lo escucha desde la barandilla.'),
       N('Un instante, entre la multitud, se ve una capucha carmesí que se da la vuelta y desaparece.'),
       N('Nadie sabe si fue un recuerdo o una aparición. Tano sigue tocando.')]);}
   else if(f==='romper'){still(c8img('c8_puente','tano'),{z0:1.0,z1:1.1,dur:40});S.caption='Unos meses después.';musicPlay('cuna');await fade(0,2);await wait(2.5);S.caption=null;
@@ -3238,6 +3238,8 @@ async function a1s0(){ // Despertar en la celda
   await dialog([L('El Flautista','No sé quién eres.'),L('El Flautista','Pero me debes algo.')]);S.overlay=null;
   await dialog([N('Algo se mueve en la paja. Una rata pequeña con la oreja mordida te olfatea la mano.'),N('Te muerde un dedo.'),
     L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.'),
+    N('Pulce deja caer algo en la paja: una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),
+    N('Al cogerla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('La guardas en el bolsillo.'),
     N('Pulce trepa por la puerta y se mete en la cerradura. Roe. Roe. Roe.',{sfx:()=>squeaks(6)}),N('Clic.')]);
   await fade(1,1);
 }
@@ -3458,10 +3460,11 @@ async function a1acusa(){ // La acusación delante del público de la ópera, y 
   await dialog([N('Te dejan de rodillas en el centro del escenario, con las cadenas puestas. Cientos de caras con antifaz te miran desde el patio y los palcos.'),
     N('Alvise Morosin sube al escenario despacio, como si también fuera parte de la función.'),
     L('Alvise Morosin','¡Venecianos! Habéis pagado para ver un monstruo marino. Aquí tenéis uno de verdad.'),
-    L('Alvise Morosin','Mirad sus ojos. Mirad sus ratas. Es el ladrón de niños de Hamelin. Trajo la peste del treinta, y hoy ha salido de las cloacas para robaros a vuestros hijos.'),
+    L('Alvise Morosin','Mirad su capucha carmesí. Mirad sus ojos. Mirad sus ratas. Es el ladrón de niños de Hamelin. Trajo la peste del treinta, y hoy ha salido de las cloacas para robaros a vuestros hijos.'),
     L('El Flautista','Me debéis mil ducados. Y vuestra palabra.'),
     L('Alvise Morosin','Venecia no hace tratos con demonios.'),
     N('Alguien tira una naranja. Luego un zapato. Luego todo lo que tienen a mano. El teatro entero grita contra ti.'),
+    N('Desde el gallinero alguien grita: «¡El Flautista Carmesí!». Y el teatro entero lo repite. Así te llamarán desde esta noche.'),
     N('En el palco, el hombre de las campanas no grita. Solo escucha.')]);
   await fade(1,1);musicPlay(null);S.fx=null;
   still('barca',{z0:1.0,z1:1.1,x0:.65,x1:.4,dur:14});await fade(0,1.5);
@@ -3497,7 +3500,7 @@ async function a2s0(){ // Sant'Ariano, dieciséis años después
       {id:'pulce',x:330,at:()=>({x:pulce.x,y:S.walk.y-58}),r:110,label:'Pulce',once:true,fn:()=>dialog([N('Pulce te muerde el dedo, como siempre. Tiene la misma oreja mordida. No ha envejecido ni un día.'),
         L('El Flautista','Tú tampoco puedes irte, ¿verdad? Mientras me deban algo.')])},
       {id:'cadenas',x:420,y:365,label:'Cadenas',once:true,fn:()=>dialog([N('Cadenas de ancla, comidas por el óxido. En una argolla todavía se lee la marca del Arsenal.')])},
-      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos, una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),N('Al tocarla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('La guardas.')]);musicPlay('game');}},
+      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos brilla algo: la moneda del niño con muleta. Se te ha caído del bolsillo al salir del agua.'),N('Al tocarla, otra vez la voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('La guardas.')]);musicPlay('game');}},
       {id:'charco',x:770,y:450,label:'Charco',once:true,fn:async()=>{S.walk.redEyes=true;await dialog([N('En el agua quieta, tu reflejo. Tus ojos brillan rojos. Tu cara es la misma de la noche del San Cassiano.'),
         N('Por la laguna pasa una góndola llena de gente con máscaras. Una de las máscaras tiene tu cara.')]);}}
     ]});
@@ -3517,7 +3520,7 @@ async function a2s1(){ // Venecia en carnaval: todos van disfrazados de ti
       {id:'copla',x:300,y:330,label:'Niños',once:true,fn:()=>dialog([N('Unos niños con capas rojas de trapo y ratas de lana cosidas a los hombros corren a tu alrededor cantando:'),
         L('Los niños','«Rata y flauta, flauta y rata: si el brujo toca, la peste mata».'),
         L('Un niño','¡Señor, su disfraz es el mejor de todos! ¡Parece de verdad!'),N('Le sonríes. Sale corriendo.')])},
-      {id:'mascaras',x:520,y:340,label:'Puesto de máscaras',once:true,fn:()=>dialog([L('El vendedor','¡Máscaras del brujo de las ratas! ¡Con ojos de cristal rojo! ¡Como el de la ópera del treinta y siete!'),
+      {id:'mascaras',x:520,y:340,label:'Puesto de máscaras',once:true,fn:()=>dialog([L('El vendedor','¡Máscaras del Flautista Carmesí! ¡Con capucha y ojos de cristal rojo! ¡Como el de la ópera del treinta y siete!'),
         N('Coges una. Es tu cara. Te la han tallado en cartón piedra, con la boca torcida y los dientes de rata.'),
         L('El Flautista','Así que esto es lo que queda de mí.')])},
       {id:'cartel',x:760,y:300,label:'Cartel',once:true,fn:()=>dialog([L('Un cartel','«Teatro di San Luca. Esta noche: IL PIFFERAIO, o la peste de Venecia. Comedia en honor del ilustrísimo Procurador de San Marco, Alvise Morosin, salvador de la ciudad».'),
