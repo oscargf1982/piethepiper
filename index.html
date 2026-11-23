@@ -3259,7 +3259,16 @@ async function a1s0(){ // Despertar en la celda
   musicPlay('carcel');await chapterTitle('ACTO I','La peste · 1630');await chapterTitle('CAPÍTULO I','Las puertas cerradas');
   still(aimg('pr_celda','despertar'),{z0:1.0,z1:1.08,dur:30});await fade(0,1.5);
   await dialog([N('Despiertas. No sabes cuánto has dormido. Ni dónde estás. Ni quién eres.'),N('Te duele la boca. Sabe a miel rancia.'),
-    N('En la pared, alguien ha rascado con una uña: «Prigioni Nuove. Año del Señor de 1630. Que Dios me saque de aquí».'),N('Prigioni Nuove. El nombre no te dice nada.'),
+    N('En la pared, alguien ha rascado con un clavo: «Zaccaria Briani. Prigioni Nuove, 1594».'),N('Prigioni Nuove. El nombre no te dice nada.'),
+    N('Debajo hay cinco rayas largas, paralelas, y encima unos puntos. Nadie más lo vería. Tú sí: es un pentagrama.'),
+    L('El Flautista','Música. Me ha dejado música.')]);
+  {const BR=['SI','SOL','LA','SI'];say('Silba lo que hay en la pared: '+pills(BR));
+   await waitNotes(BR,'El pentagrama de Briani',{onWrong:n=>say(`Eso es un ${pill(n)}. En la pared pone ${pills(BR)}.`)});say('');}
+  await dialog([N('Al silbarlo, las notas dejan de ser notas. Cada una es una letra, y las letras son palabras. Un código de preso, para que el carcelero no lo entienda.'),
+    L('Zaccaria Briani, en la pared','«El guardia del farol mira a la luz cada siete campanadas. Cuando mira, quieto. Cuando no, anda».'),
+    L('Zaccaria Briani, en la pared','«Bajo la reja del pasillo corre agua. Lo que entra por ella sale por el otro lado».'),
+    L('Zaccaria Briani, en la pared','«Lo que te quiten lo guardan en la mesa del cuerpo de guardia. Yo no llegué a la puerta. Tú sí».'),
+    N('Treinta y seis años después, un muerto te ayuda a escapar.'),
     N('En el bolsillo, un cuaderno de cuero. Todas las páginas están en blanco menos una, escrita con tu letra.')]);
   bookPage(['Alvise Morosin','1.000 ducados','Una promesa.']);await wait(1.5);
   await dialog([L('El Flautista','No sé quién eres.'),L('El Flautista','Pero me debes algo.')]);S.overlay=null;
