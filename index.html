@@ -1204,7 +1204,7 @@ async function scene8(){
     spots:[
       {id:'pulce',x:330,at:()=>({x:pulce.x,y:S.walk.y-58}),r:110,label:'Rata',once:true,fn:()=>dialog([N('Una rata pequeña con la oreja mordida se acerca y te olfatea la mano.'),N('Te muerde un dedo.'),L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.')])},
       {id:'cadenas',x:420,y:365,label:'Cadenas',once:true,fn:()=>dialog([N('Cadenas rotas, roídas. ¿Quién te las puso? ¿Por qué?')])},
-      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos brilla algo: la moneda del niño con muleta. Se te ha caído del bolsillo al salir del agua.'),N('Al tocarla, otra vez la voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('No entiendes nada. Pero la guardas.')]);musicPlay('game');}},
+      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos brilla algo: la moneda del niño con muleta. Se te ha caído del bolsillo al salir del agua.'),N('Al tocarla, otra vez la voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('Una moneda por todo un trabajo. Alguien te pagó con lo único que tenía. No entiendes nada, pero la guardas.')]);musicPlay('game');}},
       {id:'charco',x:770,y:450,label:'Charco',once:true,fn:async()=>{S.walk.redEyes=true;await dialog([N('En el agua quieta, tu reflejo. Tus ojos brillan rojos.'),N('No recuerdas tu nombre. Ni esta ciudad. Ni nada.')]);}}
     ]});
   await fade(0,1);await p;setMoveUI(false);say('');
@@ -1429,7 +1429,7 @@ async function c1s2(){ // El puente de Tano: dúo
     L('Tano','Está enferma. Fiebre. Los médicos se han llevado las medicinas de todo el barrio a la casa de cuarentena del Rio della Misericordia. Dicen que para repartirlas.'),
     L('Tano','No reparten nada. Y el que manda allí es Il Dottore del Ponte.')]);
   const c=await choice('','En el bolsillo llevas la moneda que te trajo Pulce a la celda.',['Enseñarle la moneda','Guardarla']);stats.c1.coin=c===0;
-  if(c===0)await dialog([N('Tano coge la moneda y la gira hacia la luz. El niño grabado lleva una muleta.'),L('Tano','Qué rara. El niño se parece a mí…'),L('Tano','Bah. Todos los cojos nos parecemos.'),N('Te la devuelve deprisa. Durante un rato no dice nada.')]);
+  if(c===0)await dialog([N('Tano coge la moneda y la gira hacia la luz. El niño grabado lleva una muleta.'),L('Tano','Qué rara. El niño se parece a mí…'),L('Tano','¿Quién te la dio?'),L('El Flautista','No me acuerdo. Pero sé que no me la dieron los ricos.'),L('Tano','Bah. Todos los cojos nos parecemos.'),N('Te la devuelve deprisa. Durante un rato no dice nada.')]);
   else await dialog([N('Dejas la moneda donde está. Por alguna razón, no quieres que la vea todavía.')]);
   await dialog([L('Tano','Ven. Mi abuela querrá conocerte. Le gusta la gente que se sabe su canción.')]);
   await fade(1,1);musicPlay('cannaregio');
@@ -2635,6 +2635,8 @@ async function c6s4(){ // El Libro y el recuerdo
     L('El niño de la muleta','¿Y nosotros?'),
     L('El Flautista','Volveré a por vosotros. Os lo prometo.'),
     N('Le das una figurita de madera. «Para que nunca olvides el camino de vuelta».'),
+    N('Él rebusca en su bolsillo y te pone en la mano una moneda. La única que tiene. En una cara ha rayado con una navaja un niño con muleta: él.'),
+    L('El niño de la muleta','Los mayores no te han pagado. Te pago yo. Así tienes que volver.'),
     N('Y le enseñas una canción de cuna, para que no tenga miedo mientras espera. Tócala con él.')]);
   // la canción, ahora como recuerdo
   S.mode='black';S.fade=0;S.fadeTo=0;const MEL=['SOL','LA','SI','LA','SOL'];musicPlay('cuna');
@@ -2658,6 +2660,10 @@ async function c6s5(){ // Tobias
     L('El Flautista','Te lo di yo. Hace trescientos sesenta y nueve años. Y te prometí volver.'),
     N('Tano te mira mucho rato. Luego se le llenan los ojos de lágrimas, como a un niño cualquiera.'),
     L('Tano','Tardaste mucho.'),
+    N('Sacas la moneda del bolsillo, la del niño con muleta, y se la pones en la mano.'),
+    L('El Flautista','Y tú me pagaste. Fuiste el único de Hamelin que me pagó.'),
+    L('Tano','(mirando el grabado) Lo hice yo. Con la navaja de mi padre. Me salió la muleta torcida.'),
+    N('Te la devuelve, cerrándote los dedos encima. «Todavía no. Cuando acabes».'),
     ...(stats.c6.book==='verdad'?[N('Greta se sienta junto a Tano y apoya la mano en la muleta, para sentir cuándo habla.')]:[N('Al otro lado de la plaza, Greta os mira escondida detrás de una columna. No se va.')]),
     L('Ester','Si los niños de Hamelin siguen vivos… faltaba uno. El que no veía.'),
     N('Greta coge un trozo de carbón del suelo y escribe en las losas, con letras grandes y torcidas:'),
@@ -3191,6 +3197,7 @@ async function c8true(){
   still(c8img('c8_paz','c1_barca'),{z0:1.08,z1:1.0,dur:30});S.fx=()=>{ctx.fillStyle='rgba(255,220,190,.10)';ctx.fillRect(0,0,960,540);};await fade(0,2);
   await dialog([N('Amanece. Te sientas en los escalones de la basílica sin terminar. Estás muy cansado.'),
     N('Le das la flauta a Tano.'),L('El Flautista','Cuídala. Y toca la canción para que nadie tenga miedo mientras espera.'),
+    N('Luego le pones en la mano la moneda del niño con muleta.'),L('El Flautista','Te la devuelvo. El trabajo está hecho.'),
     L('Tano','¿Y tú?'),L('El Flautista','Yo ya no tengo que esperar a nadie.'),
     N('Pulce se sube al hombro de Tano. Cierras los ojos. Por primera vez en trescientos sesenta y nueve años, nadie te debe nada.'),
     N('Y descansas.')]);
@@ -3234,12 +3241,13 @@ async function c8s6(){ // Epílogo
     await dialog([N('La consagración de Santa Maria della Salute. Un puente de barcas cruza el Gran Canal hasta la basílica terminada, blanca, con su cúpula enorme.'),
       N('Miles de venecianos cruzan con velas, como cada 21 de noviembre desde que se fue la peste.'),
       N('En el puente, un hombre de cuarenta y seis años, con capucha roja y una muleta, toca una canción de cuna con una flauta de madera y latón.'),
+      N('Le cuelga del cuello, de un cordón, una moneda antigua con un niño con muleta rayado a navaja.'),
       N('Pulce, la misma rata con la oreja mordida, sin un pelo blanco, lo escucha desde la barandilla.'),
       N('Un instante, entre la multitud, se ve una capucha carmesí que se da la vuelta y desaparece.'),
       N('Nadie sabe si fue un recuerdo o una aparición. Tano sigue tocando.')]);}
   else if(f==='romper'){still(c8img('c8_puente','tano'),{z0:1.0,z1:1.1,dur:40});S.caption='Unos meses después.';musicPlay('cuna');await fade(0,2);await wait(2.5);S.caption=null;
     await dialog([N('Tano toca en el mismo puente de siempre, con la flauta de madera y latón. Pulce, a su lado, vigila la gorra de las monedas.'),
-      N('Tiene doce años. Sigue teniendo doce años.'),N('Cada vez que la niebla sube del canal, levanta la vista. Por si acaso.')]);}
+      N('Tiene doce años. Sigue teniendo doce años.'),N('Algunas tardes busca entre las monedas de la gorra una muy vieja, con un niño con muleta rayado a navaja. Nunca está.'),N('Cada vez que la niebla sube del canal, levanta la vista. Por si acaso.')]);}
   else{still(c8img('c8_oscuro','laguna'),{z0:1.15,z1:1.0,dur:40});S.fx=()=>{ctx.save();ctx.globalCompositeOperation='color';ctx.fillStyle='#4a5a6a';ctx.fillRect(0,0,960,540);ctx.restore();};
     S.caption='Siglos después.';await fade(0,2);await wait(2.5);S.caption=null;
     await dialog([N('Una tarde de niebla, unos niños juegan junto a un canal de Venecia.'),N('A lo lejos suena una flauta.'),N('Los niños dejan de jugar. Escuchan.'),N('Y uno a uno, se levantan.')]);}
@@ -3332,7 +3340,7 @@ async function a1s0(){ // Despertar en la celda
   if(has('pr_pulce')){await fade(1,.5);still('pr_pulce',{z0:1.1,z1:1.0,x0:.45,x1:.5,dur:30});await fade(0,.8);}
   await dialog([N('Algo se mueve en la paja. Una rata pequeña con la oreja mordida te olfatea la mano.'),N('Te muerde un dedo.'),
     L('El Flautista','Así que todavía queda alguien que me reconoce.'),N('Se llama Pulce. No sabes cómo lo sabes.'),
-    N('Pulce deja caer algo en la paja: una moneda antigua. No es veneciana. Lleva grabado un niño con muleta.'),
+    N('Pulce deja caer algo en la paja: una moneda antigua, gastada de tanto tocarla. No es veneciana: es de alguna ciudad del norte.'),N('En una cara alguien ha rayado, a punta de navaja y con mano torpe de niño, la figura de un niño con muleta.'),N('No sabes por qué, pero estás seguro de una cosa: es la única moneda que te han pagado nunca.'),
     N('Al cogerla, una voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('La guardas en el bolsillo.'),
     N('Pulce trepa por la puerta y se mete en la cerradura. Roe. Roe. Roe.',{sfx:()=>squeaks(6)}),N('Clic.')]);
   await fade(1,1);
@@ -3599,7 +3607,7 @@ async function a2s0(){ // Sant'Ariano, dieciséis años después
       {id:'pulce',x:330,at:()=>({x:pulce.x,y:S.walk.y-58}),r:110,label:'Pulce',once:true,fn:()=>dialog([N('Pulce te muerde el dedo, como siempre. Tiene la misma oreja mordida. No ha envejecido ni un día.'),
         L('El Flautista','Tú tampoco puedes irte, ¿verdad? Mientras me deban algo.')])},
       {id:'cadenas',x:420,y:365,label:'Cadenas',once:true,fn:()=>dialog([N('Cadenas de ancla, comidas por el óxido. En una argolla todavía se lee la marca del Arsenal.')])},
-      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos brilla algo: la moneda del niño con muleta. Se te ha caído del bolsillo al salir del agua.'),N('Al tocarla, otra vez la voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('La guardas.')]);musicPlay('game');}},
+      {id:'moneda',x:175,y:335,label:'Moneda',once:true,fn:async()=>{musicPlay('cuna');await dialog([N('Entre los huesos brilla algo: la moneda del niño con muleta. Se te ha caído del bolsillo al salir del agua.'),N('Al tocarla, otra vez la voz de niño, muy cerca:'),L('Una voz','Dijiste que volverías.'),N('Una moneda por todo un trabajo. Alguien te pagó con lo único que tenía. La guardas.')]);musicPlay('game');}},
       {id:'charco',x:770,y:450,label:'Charco',once:true,fn:async()=>{S.walk.redEyes=true;await dialog([N('En el agua quieta, tu reflejo. Tus ojos brillan rojos. Tu cara es la misma de la noche del San Cassiano.'),
         N('Por la laguna pasa una góndola llena de gente con máscaras. Una de las máscaras tiene tu cara.')]);}}
     ]});
