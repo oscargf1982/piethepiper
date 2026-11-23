@@ -2285,7 +2285,7 @@ SCENES.push(...C34_SCN.map(x=>x[0]));
     if(extra.length&&!$('endBook').dataset.c34){$('endBook').dataset.c34=1;$('endBook').textContent+=($('endBook').textContent?' · ':'Libro de las Deudas · ')+extra.join(' · ');}}).observe(e,{attributes:true,attributeFilter:['class']});}C34_SCN.forEach(([f,n])=>{const i=SCENES.indexOf(f);SCN[i]=n;const o=document.createElement('option');o.value=i;o.textContent=n.replace('Cap. ','Capítulo ');$('startAt').appendChild(o);});
 // =================== CAPÍTULO 5 · LA FRAGUA DE LAS JAULAS ===================
 // Nota FA (tecla R) y hechizo Contramelodía (FA-LA-DO'): rompe los ataques enemigos marcados con song:true (ver bossFight).
-NOTES.FA={label:'FA',pc:5,midi:77,f:698.46,step:1,color:'#8a5cb0',key:'r',finger:'el pulgar, los tres dedos de la mano izquierda y el índice de la derecha (en flauta barroca, además el anular y el meñique de la derecha)'};
+NOTES.FA={label:'FA',pc:5,midi:77,f:698.46,step:1,color:'#8a5cb0',key:'r',finger:'el pulgar, los tres dedos de la mano izquierda y el índice de la derecha'};
 mkPad('FA',false);
 SPELLS.contra={name:'Contramelodía',notes:['FA','LA','DO'],desc:'Rompe su próximo canto.'};
 FACE_RULES.push([/Proto|Alvise/,'proto']);
