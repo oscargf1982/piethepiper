@@ -200,7 +200,7 @@ body.ingame #bMute{display:none}
       <div id="pad"></div>
       <button class="mv" id="bRight" aria-label="Caminar a la derecha">▶</button>
     </div>
-    <button class="mv act" id="bAct">Mirar / Seguir (E)</button>
+    <button class="mv act" id="bAct">Mirar / Seguir (F)</button>
     <div id="panel">
       <span>Nota oída: <span id="det">–</span></span>
       <span>Volumen <span id="lvl"><i></i></span></span>
@@ -662,7 +662,7 @@ function dialog(lines){
 function choice(who,text,opts){
   return new Promise(res=>{D={choice:true};$('dlg').classList.remove('hidden');$('dWho').textContent=who||'';setFace(who);$('dTxt').innerHTML=text;$('dTxt').classList.toggle('narr',!who);
     $('dMore').classList.add('hidden');const o=$('dOpts');o.innerHTML='';
-    opts.forEach((t,i)=>{const b=document.createElement('button');b.textContent=(i+1)+'. '+t;b.onclick=e=>{e.stopPropagation();D=null;$('dlg').classList.add('hidden');o.innerHTML='';res(i);};o.appendChild(b);});
+    opts.forEach((t,i)=>{const b=document.createElement('button');b.textContent=(TOUCH?(i+1)+'. ':'ASDF'[i]+'. ')+t;b.onclick=e=>{e.stopPropagation();D=null;$('dlg').classList.add('hidden');o.innerHTML='';res(i);};o.appendChild(b);});
     D.pick=i=>o.children[i]&&o.children[i].click();});
 }
 function advance(){if(D&&D.r){const r=D.r;D.r=null;r();return true;}return false;}
@@ -787,7 +787,7 @@ function drawWalk(t,dt){
     ctx.save();const pul=.5+.5*Math.sin(t*4+p.x);
     ctx.globalAlpha=near||hov?.9:.35+.25*pul;ctx.strokeStyle='#e0b04a';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,14+pul*4,0,7);ctx.stroke();
     ctx.globalAlpha=near||hov?1:.7;ctx.shadowColor='#e0b04a';ctx.shadowBlur=near||hov?14:8;ctx.fillStyle='#e0b04a';ctx.beginPath();ctx.moveTo(x,y-9);ctx.lineTo(x+7,y);ctx.lineTo(x,y+9);ctx.lineTo(x-7,y);ctx.closePath();ctx.fill();
-    if(near||hov)labels.push([s.label+(near&&!TOUCH?' (E)':''),x,y]);ctx.restore();});
+    if(near||hov)labels.push([s.label+(near&&!TOUCH?' (F)':''),x,y]);ctx.restore();});
   const bob=W.moving?Math.abs(Math.sin(t*9))*3:0,sway=0;
   shadowAt(W.x,W.y,34*W.s/.6);
   ctx.save();ctx.translate(W.x,W.y);ctx.rotate(sway);ctx.translate(-W.x,-W.y);
@@ -1049,6 +1049,10 @@ document.addEventListener('keydown',e=>{
   if(e.repeat)return;
   if(k===' '||k==='enter'||k==='e'){e.preventDefault();act();return;}
   if(D&&D.pick&&'12'.includes(k)){D.pick(+k-1);return;}
+  // Fuera de combate la mano izquierda hace todo (Oscar): A S D F eligen opción 1-4; F también mira, habla y avanza el texto
+  {const AK=['KeyA','KeyS','KeyD','KeyF'].indexOf(e.code),busy=!!P||!!noteHandler;
+   if(AK>=0&&!busy&&D&&D.pick){e.preventDefault();D.pick(AK);return;}
+   if(AK===3&&!busy&&((D&&D.r)||!['combat','combat1','stillstaff','tut','exodo'].includes(S.mode))){e.preventDefault();act();return;}}
   if(k==='1'&&S.mode==='combat'){$('spCard').click();return;}
   if(S.mode==='combat1'&&'123'.includes(k)&&!D){const b=$('spells1').children[+k-1];if(b&&!b.disabled)b.click();return;}
   for(const n of NOTE_ORDER)if((NOTES[n].code&&NOTES[n].code===e.code)||NOTES[n].key===k){e.preventDefault();pressKey(n);return;}
@@ -1072,7 +1076,7 @@ async function scene0(){
   await dialog([L('El Flautista','Me debían algo.'),L('El Flautista','Siempre me deben algo.')]);
   await fade(1,1.6);S.fx=null;S.mode='black';
   S.title={t0:gt,sub:'Venecia. Primavera de 1630. Siete años antes.'};S.fade=0;S.fadeTo=0;bell();await wait(4.5);
-  await dialog([N('Pulsa Espacio, toca el cuadro o el botón «Seguir» para continuar.')]);
+  await dialog([N('Pulsa F o Espacio, toca el cuadro o el botón «Seguir» para continuar.')]);
   await fade(1,1);S.title=null;
 }
 async function scene1(){
