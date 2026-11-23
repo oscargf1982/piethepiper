@@ -582,6 +582,7 @@ function micFrame(dt){
 // ---------- Entrada de notas ----------
 let noteHandler=null; // escenas libres (tutorial, combate en espera)
 let P=null;           // interpretación con ritmo en curso
+const SR={on:false,fight:0,wait:null}; /*SPEEDRUN*/ // estado del modo SPEED RUN (ver bloque DEBUG/SPEEDRUN)
 function onNote(name,t){
   if(paused)return false;
   if(P&&t>=P.listenFrom)return judge(name,t);
@@ -607,6 +608,7 @@ function wantNotes(arr){NOTE_ORDER.forEach(k=>$('pad_'+k).classList.toggle('want
 // ---------- Interpretación con ritmo (éxodo y combate) ----------
 let ticks=[],demo=[];
 function perform(notes,{countIn=2,withDemo=true}={}){
+  /*SPEEDRUN*/if(SR.on&&SR.fight>0)return Promise.resolve(SR.perfect(notes));
   const free=$('free').checked;const st=gt+0.6;
   demo=withDemo?notes.map((n,i)=>({n,t:st+BEAT+i*BEAT,played:false})):[];
   if(withDemo)ticks.push({t:st,hi:true});
@@ -821,8 +823,10 @@ function drawPrompt(){
 
 }
 function waitNotes(seq,top,{onWrong,onEach}={}){
+  /*SPEEDRUN*/if(SR.on&&SR.fight>0){wantNotes([]);return Promise.resolve();}
   const T=S;T.prompt={notes:seq,got:0,top};wantNotes([seq[0]]);
   return new Promise(res=>{let last=0;
+    SR.wait=()=>{if(!T.prompt)return;noteHandler=null;wantNotes([]);T.prompt=null;res();};/*SPEEDRUN*/
     noteHandler=(name)=>{const p=T.prompt;if(!p)return;
       if(name===seq[p.got]){p.got++;last=gt;onEach&&onEach(name,p.got);if(p.got>=seq.length){noteHandler=null;wantNotes([]);setTimeout(()=>{T.prompt=null;res();},350);}else wantNotes([seq[p.got]]);}
       else{if(p.got>0&&name===seq[0]){p.got=1;onEach&&onEach(name,1);wantNotes([seq[1]]);return;}p.got=0;wantNotes([seq[0]]);onWrong&&onWrong(name);}
@@ -937,6 +941,7 @@ function playerTurn(){
   say('Tu turno. Toca <b>Enjambre</b>: '+pills(ENJ));
   return new Promise(res=>{let seq=[];
     const done=async p=>{noteHandler=null;$('spCard').disabled=true;wantNotes([]);staffHint='';C.state='anim';res(p);};
+    /*SPEEDRUN*/C.srRes=()=>done(SR.perfect(ENJ));if(SR.on)return C.srRes();
     noteHandler=(name,t)=>{const lastN=seq[seq.length-1];if(lastN&&t-lastN.t>2.4)seq=[];seq.push({n:name,t});if(seq.length>3)seq.shift();
       if(seq.length===3&&seq.every((c,i)=>c.n===ENJ[i])){popup('¡Enjambre!','#e0b04a',HITX+150,395);done(directPerf(seq));}};
     $('spCard').onclick=async()=>{if(C.state!=='choose')return;noteHandler=null;$('spCard').disabled=true;C.state='perform';staffHint='';
@@ -944,6 +949,7 @@ function playerTurn(){
   });
 }
 async function enemyEcho(atk){
+  /*SPEEDRUN*/if(SR.on)return;
   const C=S.cb;C.state='echo';C.echo=true;say(`${C.name} prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
   const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;scorePerf(p);
   const dmg=Math.round(atk.dmg*(1-hits/p.notes.length));
@@ -956,7 +962,8 @@ async function combatGuards(){
   await wait(1.4);C.enter=null;
   const ATK=[{id:'alabarda',name:'Golpe de alabarda',dmg:9,notes:['LA','SOL','LA']},{id:'empujon',name:'Empujón',dmg:7,notes:['SI','SOL','SI']}];let k=0;
   while(true){
-    const p=await playerTurn();const pw=scorePerf(p);const dmg=Math.round(14*pw);
+    const p=await playerTurn();/*SPEEDRUN*/if(SR.on){await SR.hit(C.ehp,hud);C.flee=gt;say('Los guardias huyen entre la multitud.');await wait(1.6);return true;}
+    const pw=scorePerf(p);const dmg=Math.round(14*pw);
     say(pw>0?`Potencia ${Math.round(pw*100)} %. Las ratas muerden: ${dmg} de daño.`:'Las ratas no entienden la melodía...');if(pw>0)squeaks();
     await animWait({type:'attack',dur:1.8,dmg});
     if(C.ehp<=0){C.flee=gt;say('Los guardias huyen entre la multitud.');await wait(1.6);return true;}
@@ -968,6 +975,7 @@ async function combatDottore(){
   const C=S.cb={foe:'dottore',name:'Il Dottore del Ponte',php:S.cb?S.cb.php:50,pmax:50,ehp:90,emax:90,ehpShow:false,phurt:0,ehurt:0,anim:null,enter:gt,minHp:8};hud();
   await wait(1.5);C.enter=null;
   for(let turn=0;turn<2;turn++){
+    /*SPEEDRUN*/if(SR.on)return;
     const p=await playerTurn();const pw=scorePerf(p);if(pw>0)squeaks();
     say('El humo verde del incensario aturde a las ratas. Rebotan contra el abrigo encerado.');
     await animWait({type:'attack',dur:1.8,dmg:0,bounce:true});
@@ -1256,6 +1264,7 @@ function playerTurn1(){
   say('Tu turno: '+avail.map(s=>`<b>${s.name}</b> ${pills(s.notes)}`).join(' · '));
   return new Promise(res=>{let seq=[];
     const fin=(s,p)=>{noteHandler=null;C.pick=null;cardsOn(false);staffHint='';C.state='anim';res({s,p});};
+    /*SPEEDRUN*/C.srRes=()=>fin(avail[0],SR.perfect(avail[0].notes));if(SR.on)return C.srRes();
     noteHandler=(name,t)=>{const l=seq[seq.length-1];if(l&&t-l.t>2.4)seq=[];seq.push({n:name,t});if(seq.length>3)seq.shift();
       const m=seq.length===3&&avail.find(s=>s.notes.every((n,i)=>n===seq[i].n));if(m){popup('¡'+m.name+'!','#e0b04a',HITX+150,395);fin(m,directPerf(seq));}};
     C.pick=async s=>{if(C.state!=='choose')return;noteHandler=null;cardsOn(false);C.state='perform';staffHint='';
@@ -1263,6 +1272,7 @@ function playerTurn1(){
   });
 }
 async function resolveSpell(s,p){ensureNotes(['DO']);
+  /*SPEEDRUN*/if(SR.on){const C=S.cb;return SR.hit(C.ehp-(C.phase===1?45:0),hud1);}
   const C=S.cb;let pw=scorePerf(p);if(C.burn&&s.id==='enjambre'){pw*=.75;C.burn=false;}
   if(pw<=0){say('Las ratas no entienden la melodía...');await animWait({type:'fizzle',dur:1.2});return;}
   squeaks();
@@ -1274,6 +1284,7 @@ async function resolveSpell(s,p){ensureNotes(['DO']);
   hud1();
 }
 async function echo1(atk){
+  /*SPEEDRUN*/if(SR.on)return;
   const C=S.cb;C.state='echo';C.echo=true;say(`Il Dottore prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
   const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;scorePerf(p);
   let dmg=Math.round(atk.dmg*(1-hits/p.notes.length)),txt=hits===p.notes.length?'¡Esquiva total! ':hits?`Esquivas a medias (${hits}/${p.notes.length}). `:'';
@@ -1744,6 +1755,7 @@ function playerTurnG(){
   say('Tu turno. Toca la melodía de un hechizo.'+(C.conf?'<br><span style="color:#b9d89a">Ratas confundidas: tócalo perfecto o usa Marea.</span>':'')+(C.next&&C.next.song?'<br><span style="color:#e0b04a">'+(C.short||C.name)+' va a cantar <b>'+C.next.name+'</b>'+(avail.includes('contra')?': rómpelo con Contramelodía.':'.')+'</span>':''));
   return new Promise(res=>{let seq=[];
     const fin=(id,p)=>{noteHandler=null;C.pick=null;cardsOn(false);staffHint='';C.state='anim';res({s:id,p});};
+    /*SPEEDRUN*/C.srRes=()=>fin(avail[0],SR.perfect(SPELLS[avail[0]].notes));if(SR.on)return C.srRes();
     noteHandler=(name,t)=>{const l=seq[seq.length-1];if(l&&t-l.t>2.4)seq=[];seq.push({n:name,t});if(seq.length>5)seq.shift();
       for(const id of avail){const m=SPELLS[id].notes;if(seq.length<m.length)continue;const tail=seq.slice(-m.length);
         if(tail.every((c,i)=>c.n===m[i])){popup('¡'+SPELLS[id].name+'!','#e0b04a',HITX+150,395);fin(id,directPerf(tail));return;}}};
@@ -1752,6 +1764,7 @@ function playerTurnG(){
   });
 }
 async function resolveG(id,p){
+  /*SPEEDRUN*/if(SR.on){const C=S.cb;return SR.hit(C.ehp-(C.phase===1?C.cfg.shiftAt:0),hudG);}
   const C=S.cb;let pw=scorePerf(p),pre='';
   if(C.conf&&id!=='marea'){if(pw>=1.45){pre='Tu melodía suena más clara que su canto. ';}else{pw*=.5;pre='Las ratas siguen confundidas: media fuerza. ';}C.conf=false;}
   if(pw<=0){say(pre+'Las ratas no entienden la melodía...');await animWait({type:'fizzle',dur:1.2});hudG();return;}
@@ -1774,6 +1787,7 @@ async function effectG(id,pw,pre){
   hudG();
 }
 async function echoG(atk){
+  /*SPEEDRUN*/if(SR.on)return;
   const C=S.cb;C.state='echo';C.echo=true;C.cur=atk;say(`${C.short||C.name} prepara <b>${atk.name}</b>.<br>Escucha su melodía y repítela para esquivar.`);
   const p=await perform(atk.notes);C.echo=false;const hits=p.notes.filter(n=>n.j&&n.j!=='fallo').length;scorePerf(p);
   let dmg=Math.round(atk.dmg*(1-hits/p.notes.length)),txt=hits===p.notes.length?'¡Esquiva total! ':hits?`Esquivas a medias (${hits}/${p.notes.length}). `:'';
@@ -3652,6 +3666,32 @@ addEventListener('keydown',e=>{if($('title').classList.contains('hidden')||docum
 menuUI();selMenu(getSave()?0:1);
 const m=location.hash.match(/escena=(\d+)/);if(m){$('startAt').value=m[1];START=+m[1];}
 requestAnimationFrame(loop);
+// ==================== DEBUG / SPEEDRUN (quitar en la versión final) ====================
+// Ctrl izquierdo + Espacio activa/desactiva el modo SPEED RUN: mientras está activo, todos los combates
+// (Guardias, Dottore, jefes, melodías dentro de los combates) se ganan solos y la historia sigue igual
+// (cambios de fase, notas nuevas, piezas de flauta, finales de combate). Para quitarlo: borrar este bloque
+// y las líneas marcadas con /*SPEEDRUN*/ (busca "SPEEDRUN" en el archivo).
+{
+  let ctrlR=false; // solo Ctrl izquierdo: se descarta si está pulsado el derecho
+  SR.perfect=notes=>({notes:notes.map(n=>({n,t:gt,j:'perfecta'}))});
+  SR.hit=async(dmg,h)=>{say('<b style="color:#e0b04a">SPEED RUN</b>');squeaks();await animWait({type:'attack',dur:1.8,dmg:Math.max(0,dmg),crit:true});const C=S.cb;if(C&&C.ehp>0&&dmg>=C.ehp)C.ehp=0;h&&h();};
+  const wrap=f=>async(...a)=>{SR.fight++;if(SR.on)SR.kick();try{return await f(...a);}finally{SR.fight--;}};
+  bossFight=wrap(bossFight);combatC1=wrap(combatC1);combatGuards=wrap(combatGuards);combatDottore=wrap(combatDottore);
+  // si se activa a mitad de combate, termina lo que esté pendiente
+  SR.kick=()=>{if(SR.fight<=0)return;
+    if(P){P.notes.forEach(n=>{n.j='perfecta';});P.doneAt=gt-1;}
+    if(SR.wait){const w=SR.wait;SR.wait=null;w();}
+    const C=S.cb;if(C&&C.state==='choose'&&C.srRes)C.srRes();};
+  const badge=document.createElement('div');badge.textContent='SPEED RUN';
+  badge.style.cssText='position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:9999;padding:3px 10px;font:bold 13px Georgia,serif;letter-spacing:2px;color:#111;background:#e0b04a;border-radius:4px;pointer-events:none;display:none;opacity:.85';
+  document.body.appendChild(badge);
+  addEventListener('keydown',e=>{if(e.code==='ControlRight')ctrlR=true;
+    if(e.code==='Space'&&e.ctrlKey&&!ctrlR){e.preventDefault();e.stopImmediatePropagation();if(e.repeat)return;
+      SR.on=!SR.on;badge.style.display=SR.on?'block':'none';if(SR.on)SR.kick();}},true);
+  addEventListener('keyup',e=>{if(e.code==='ControlRight')ctrlR=false;},true);
+  addEventListener('blur',()=>{ctrlR=false;});
+}
+// ==================== FIN DEBUG / SPEEDRUN ====================
 window.__ptp={S:()=>S,gt:()=>gt,press:n=>pressKey(n),act,keys,D:()=>D,P:()=>P,stats};
 })();
 </script>
