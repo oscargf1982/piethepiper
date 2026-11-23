@@ -11,3 +11,10 @@ Referencias y fondos de los escenarios del juego. Estilo general: tinta y acuare
 - **Prompt para pedírselo a Claude:** [prompt-fondo-puente.md](prompt-fondo-puente.md)
 - **Fondo final:** [escenario-puente-combate.png](escenario-puente-combate.png) (1672 × 941). Noche roja, luna de sangre, cúpula de la Salute al fondo, niebla verde, estandarte y puerta con cruz de peste, góndola tapada.
 - **Integrado en el prototipo (2026-11-21):** el fondo va dentro del HTML (reducido a 960 × 540 y subido 40 px). Los personajes y las ratas pisan los escalones reales del puente de la imagen. Si se cambia el fondo, hay que volver a medir los escalones (constante `STEPS` del prototipo).
+
+## Escenario 2 · La cripta inundada de San Zaccaria (combate contra la Monaca, capítulo 1)
+
+- **Fondo final:** [cripta-san-zaccaria.png](cripta-san-zaccaria.png) (1672 × 941), aportado por Oscar el 2026-11-23.
+- **Descripción:** cripta románica con bóvedas de arista y columnas de capiteles tallados, medio inundada de agua negra que refleja las velas. Al fondo, en el centro, un altar de mármol con un sol grabado y una estatua de santa velada encima. A los lados, nichos con calaveras, relieves en la pared, sarcófagos, ataúdes apoyados en el muro y velas derretidas sobre las basas de las columnas. Niebla verde a ras del agua.
+- **Composición para el combate:** vista frontal y simétrica. La línea del agua está más o menos a 2/3 de la altura (y ≈ 640 de 941). El altar central es el foco natural para la Monaca, y los huecos entre columnas a izquierda y derecha sirven para colocar a los combatientes. No hay suelo seco: los personajes estarían de pie en el agua o sobre las basas de las columnas.
+- **Uso:** sustituye al escenario anterior del combate contra la Monaca. Lo integra en el juego el hilo del capítulo 1.
