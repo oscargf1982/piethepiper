@@ -1046,6 +1046,7 @@ document.addEventListener('keydown',e=>{
   if(paused)return;
   if(k==='arrowleft'){keys.left=true;e.preventDefault();return;}
   if(k==='arrowright'){keys.right=true;e.preventDefault();return;}
+  if((e.code==='KeyJ'||e.code==='KeyL')&&S.mode==='walk'&&!P&&!noteHandler&&!D){keys[e.code==='KeyJ'?'left':'right']=true;e.preventDefault();return;} // J/L caminan (Oscar)
   if(e.repeat)return;
   if(k===' '||k==='enter'||k==='e'){e.preventDefault();act();return;}
   if(D&&D.pick&&'12'.includes(k)){D.pick(+k-1);return;}
@@ -1057,7 +1058,7 @@ document.addEventListener('keydown',e=>{
   if(S.mode==='combat1'&&'123'.includes(k)&&!D){const b=$('spells1').children[+k-1];if(b&&!b.disabled)b.click();return;}
   for(const n of NOTE_ORDER)if((NOTES[n].code&&NOTES[n].code===e.code)||NOTES[n].key===k){e.preventDefault();pressKey(n);return;}
 });
-document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='arrowleft')keys.left=false;if(k==='arrowright')keys.right=false;});
+document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='arrowleft'||e.code==='KeyJ')keys.left=false;if(k==='arrowright'||e.code==='KeyL')keys.right=false;});
 [['bLeft','left'],['bRight','right']].forEach(([id,dir])=>{const b=$(id);
   const on=e=>{e.preventDefault();keys[dir]=true;b.classList.add('on');};const off=()=>{keys[dir]=false;b.classList.remove('on');};
   b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,off));});
